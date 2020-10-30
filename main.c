@@ -4,6 +4,7 @@
 #include "EIHttpClient.h"
 #include "EILog.h"
 #include "nlp.h"
+#include "AudioRecorder.h"
 
 #define APPID "5d2f27d2"
 #define AIUI_API_KEY "a605c4712faefae730cc84b62c0eb92f"
@@ -80,21 +81,8 @@ void iHttpTest1()
 
 int main(int argc, char *argv[])
 {
-    // iHttpTest1();
-    // iHttpTest2();
-    #ifndef _WIN32
-    while (1) {
-    #endif
-
-        char szNLPResult[1024] = {0};
-        iNLPDemo(szNLPResult, sizeof(szNLPResult));
-        // if (szNLPResult[0] != '\0') {
-        //     WebSocketTTS(szNLPResult);
-        // }
-        
-    #ifndef _WIN32
-    }
-    #endif
-
+    extern void vAudioRecordTest();
+    vAudioRecordTest();
+    
     return 0;
 }

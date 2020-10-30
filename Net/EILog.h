@@ -12,12 +12,22 @@ enum EDEBUG
     EDEBUG_MAX
 };
 
-#define EI_DEBUG_LEVEL EERROR
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define EI_DEBUG_LEVEL EDEBUG
 #define LOG(level, format, ...) \
     { \
         if (level >= EI_DEBUG_LEVEL) { \
-            printf("[%s %s line:%d]"format"\n",__FILE__,__FUNCTION__,__LINE__, ##__VA_ARGS__); \
+            printf("[%s %s line:%d]",__FILE__,__FUNCTION__,__LINE__); \
+            printf(format, ##__VA_ARGS__); \
+            printf("\n"); \
         } \
     }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
