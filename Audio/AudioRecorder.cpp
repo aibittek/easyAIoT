@@ -301,28 +301,35 @@ bool bAudioOpen(AudioConfig_t *pAudioConfig)
     config.stop_threshold = 0;
     config.silence_threshold = 0;
 
-    capturing = 1;
-    // FILE *file = fopen("./test.pcm", "wb");
-
     pcm = pcm_open(card, device, PCM_IN, &config);
     if (!pcm || !pcm_is_ready(pcm)) {
-        fprintf(stderr, "Unable to open PCM device (%s)\n",
+        LOG(EERROR, "Unable to open PCM device (%s)\n",
                 pcm_get_error(pcm));
-        return ;
+        return false;
     }
+    return true;
+}
 
+bool bAudioStart()
+{
+    unsigned int size;
+    unsigned int frames_read;
+    unsigned int total_frames_read;
+    char *buffer;
+    struct pcm *pcm;
+
+    pcm = (struct pcm *)Recorder.pvAudioHandle;
     size = pcm_frames_to_bytes(pcm, pcm_get_buffer_size(pcm));
     buffer = malloc(size);
     if (!buffer) {
-        fprintf(stderr, "Unable to allocate %u bytes\n", size);
-        pcm_close(pcm);
-        return ;
+        LOG(EERROR, "Unable to allocate %u bytes\n", size);
+        return false;
     }
 
-    if (prinfo) {
-        // printf("Capturing sample: %u ch, %u hz, %u bit\n", channels, rate,
-        //    pcm_format_to_bits(format));
-    }
+    Recorder.pvAudioHandle = (AudioHandle)pcm;
+    LOG(EDEBUG, "Capturing sample: %u ch, %u hz, %u bit\n", channels, rate,
+        pcm_format_to_bits(format));
+
     bytes_per_frame = pcm_frames_to_bytes(pcm, 1);
     total_frames_read = 0;
     frames_read = 0;
@@ -345,10 +352,6 @@ bool bAudioOpen(AudioConfig_t *pAudioConfig)
         // }
     }
     free(buffer);
-    pcm_close(pcm);
-}
-bool bAudioStart()
-{
 }
 void vAudioStop()
 {
@@ -357,6 +360,50 @@ void vAudioStop()
 void vAudioClose()
 {
     pcm_close(pcm);
+}
+static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvData, int32_t iLen)
+{
+    DWORD bytesWritten = 0;
+    static HANDLE hFile = NULL;
+    static DWORD totalWriten = 0;
+    if (!hFile)
+    {
+        const char *pathname = (const char *)pvUserData;
+        hFile = CreateFile(pathname,            // File to create.
+                        GENERIC_WRITE,         // Open for writing.
+                        0,                     // Do not share.
+                        NULL,                  // Default security.
+                        CREATE_ALWAYS,         // Overwrite existing.
+                        FILE_ATTRIBUTE_NORMAL, // Normal file.
+                        NULL);
+
+        if (hFile == INVALID_HANDLE_VALUE)
+        {
+            LOG(EDEBUG, "测试创建设备失败");
+            return ;
+        }
+    }
+    
+    if (AUDIO_DATA == iType) {
+        WriteFile(hFile, pvData, iLen, &bytesWritten, NULL);
+        totalWriten += bytesWritten;
+        if (totalWriten > 360*1024) {
+            SetEvent(pvEventHandle);
+        }
+    }
+    else if (AUDIO_CLOSE == iType) {
+        CloseHandle(hFile);
+        hFile = NULL;
+    }
+}
+
+void vAudioRecordTest()
+{
+    AudioConfig_t stAudioConfig = {16000, 16, 1, RecordCB, (void*)"test.pcm"};
+    Recorder.open(&stAudioConfig);
+    Recorder.start();
+    // fgetc(stdin);
+    Recorder.close();
 }
 #else
 #endif
