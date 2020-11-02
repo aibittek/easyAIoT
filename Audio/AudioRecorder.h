@@ -31,6 +31,7 @@ typedef struct AudioRecorder {
     void (*close)(void);
     AudioHandle             pvAudioHandle;      /* 音频设备的句柄 */
     AudioConfig_t           stAudioConfig;      /* 音频设备的配置 */
+    bool                    bRecording;         /* 是否正在录音 */
 }AudioRecorder_t;
 
 extern AudioRecorder_t Recorder;

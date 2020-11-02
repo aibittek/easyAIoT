@@ -17,6 +17,7 @@ AudioRecorder_t Recorder = {
     .close  = vAudioClose,
     .pvAudioHandle = NULL,
     .stAudioConfig = {16000, 16, 1, NULL, NULL},
+    .bRecording = false,
 };
 
 #if defined(WIN32)
@@ -182,6 +183,7 @@ bool bAudioStart()
     {
         MMRESULT mmResult = waveInStart((HWAVEIN)Recorder.pvAudioHandle);
         WaitForSingleObject(pvEventHandle, INFINITE);
+        Recorder.bRecording = true;
         return (MMSYSERR_NOERROR == mmResult);
     }
     return false;
@@ -189,6 +191,7 @@ bool bAudioStart()
 
 void vAudioStop()
 {
+    Recorder.bRecording = false;
     if (pvEventHandle) {
         SetEvent(pvEventHandle);
     }
@@ -205,52 +208,7 @@ void vAudioClose()
     }
 }
 
-static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvData, int32_t iLen)
-{
-    DWORD bytesWritten = 0;
-    static HANDLE hFile = NULL;
-    static DWORD totalWriten = 0;
-    if (!hFile)
-    {
-        const char *pathname = (const char *)pvUserData;
-        hFile = CreateFile(pathname,            // File to create.
-                        GENERIC_WRITE,         // Open for writing.
-                        0,                     // Do not share.
-                        NULL,                  // Default security.
-                        CREATE_ALWAYS,         // Overwrite existing.
-                        FILE_ATTRIBUTE_NORMAL, // Normal file.
-                        NULL);
-
-        if (hFile == INVALID_HANDLE_VALUE)
-        {
-            LOG(EDEBUG, "测试创建设备失败");
-            return ;
-        }
-    }
-    
-    if (AUDIO_DATA == iType) {
-        WriteFile(hFile, pvData, iLen, &bytesWritten, NULL);
-        totalWriten += bytesWritten;
-        if (totalWriten > 360*1024) {
-            SetEvent(pvEventHandle);
-        }
-    }
-    else if (AUDIO_CLOSE == iType) {
-        CloseHandle(hFile);
-        hFile = NULL;
-    }
-    
-}
-void vAudioRecordTest()
-{
-    AudioConfig_t stAudioConfig = {16000, 16, 1, RecordCB, (void*)"test.pcm"};
-    Recorder.open(&stAudioConfig);
-    Recorder.start();
-    // fgetc(stdin);
-    Recorder.close();
-}
-
-#elif defined(UNIX)
+#elif defined(UNIX) || defined(__linux__)
 #include <tinyalsa/asoundlib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -258,7 +216,6 @@ void vAudioRecordTest()
 #include <signal.h>
 #include <string.h>
 #include <limits.h>
-static bool bRecordCapturing = false;
 bool bAudioOpen(AudioConfig_t *pAudioConfig)
 {
     if (!pAudioConfig)
@@ -284,11 +241,7 @@ bool bAudioOpen(AudioConfig_t *pAudioConfig)
         default:
         break;
     }
-    unsigned int frames_read;
-    unsigned int total_frames_read;
-    unsigned int bytes_per_frame;
-    unsigned int size;
-    char *buffer;
+
     struct pcm *pcm;
     struct pcm_config config;
     memset(&config, 0, sizeof(config));
@@ -301,12 +254,17 @@ bool bAudioOpen(AudioConfig_t *pAudioConfig)
     config.stop_threshold = 0;
     config.silence_threshold = 0;
 
+    // open record device
     pcm = pcm_open(card, device, PCM_IN, &config);
     if (!pcm || !pcm_is_ready(pcm)) {
-        LOG(EERROR, "Unable to open PCM device (%s)\n",
+        LOG(EERROR, "Unable to open PCM device (%s)",
                 pcm_get_error(pcm));
         return false;
     }
+    Recorder.pvAudioHandle = (AudioHandle)pcm;
+    LOG(EDEBUG, "Capturing sample: %u ch, %u hz, %u bit\n", channels, rate,
+        pcm_format_to_bits(format));
+    
     return true;
 }
 
@@ -315,10 +273,15 @@ bool bAudioStart()
     unsigned int size;
     unsigned int frames_read;
     unsigned int total_frames_read;
+    unsigned int bytes_per_frame;
     char *buffer;
     struct pcm *pcm;
 
     pcm = (struct pcm *)Recorder.pvAudioHandle;
+    if (!pcm) {
+        LOG(EDEBUG, "record device not yet initilize.");
+        return false;
+    }
     size = pcm_frames_to_bytes(pcm, pcm_get_buffer_size(pcm));
     buffer = malloc(size);
     if (!buffer) {
@@ -326,15 +289,12 @@ bool bAudioStart()
         return false;
     }
 
-    Recorder.pvAudioHandle = (AudioHandle)pcm;
-    LOG(EDEBUG, "Capturing sample: %u ch, %u hz, %u bit\n", channels, rate,
-        pcm_format_to_bits(format));
-
     bytes_per_frame = pcm_frames_to_bytes(pcm, 1);
     total_frames_read = 0;
     frames_read = 0;
-    bRecordCapturing = true;
-    while (bRecordCapturing) {
+    Recorder.bRecording = true;
+    
+    while(Recorder.bRecording) {
         frames_read = pcm_readi(pcm, buffer, pcm_get_buffer_size(pcm));
         total_frames_read += frames_read;
         if (Recorder.stAudioConfig.pfCallback) {
@@ -355,14 +315,25 @@ bool bAudioStart()
 }
 void vAudioStop()
 {
-    bRecordCapturing = false;
+    Recorder.bRecording = false;
 }
 void vAudioClose()
 {
-    pcm_close(pcm);
+    if (Recorder.pvAudioHandle) {
+        pcm_close(Recorder.pvAudioHandle);
+    }
 }
+
+#else
+
+/* for another platform */
+
+#endif
+
+/* for test */
 static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvData, int32_t iLen)
 {
+    #if defined(WIN32)
     DWORD bytesWritten = 0;
     static HANDLE hFile = NULL;
     static DWORD totalWriten = 0;
@@ -394,19 +365,41 @@ static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvDa
     else if (AUDIO_CLOSE == iType) {
         CloseHandle(hFile);
         hFile = NULL;
+        Recorder.stop();
     }
+    #elif defined(UNIX) || defined(__linux__)
+    uint32_t bytesWritten = 0;
+    static uint32_t totalWriten = 0;
+    const char *pathname = (const char *)pvUserData;
+    static FILE* fp = NULL;
+    if (!fp) {
+        fp = fopen(pathname, "w+");
+    }
+    if (AUDIO_DATA == iType) {
+        if (fp) {
+            bytesWritten = fwrite(pvData, 1, iLen, fp);
+            totalWriten += bytesWritten;
+            LOG(EDEBUG, "totalWriten:%d, iLen:%d", totalWriten, iLen);
+            if (totalWriten > 360*1024) {
+                Recorder.stop();
+            }
+        }
+    }
+    else if (AUDIO_CLOSE == iType) {
+        if (fp) fclose(fp);
+        fp = NULL;
+        Recorder.stop();
+    }
+    
+    #endif
 }
-
 void vAudioRecordTest()
 {
     AudioConfig_t stAudioConfig = {16000, 16, 1, RecordCB, (void*)"test.pcm"};
     Recorder.open(&stAudioConfig);
     Recorder.start();
-    // fgetc(stdin);
     Recorder.close();
 }
-#else
-#endif
 
 #ifdef __cplusplus
 }
