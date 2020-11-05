@@ -3,55 +3,55 @@
 
 #include "EIPlatform.h"
 
-// YEAR70_BY_SECONDS£º1900-1970ÄêÖ®¼äµÄÃëÊý
-// 1900-1970ÓÐ17¸öÈòÄê£¬ÖµÎª((1970 - 1900) * 365 + 17) * 24 * 60 * 60 = 2208988800UL;
-#define YEAR70_BY_SECONDS 2208988800UL /* 1900Äê¡«1970ÄêÖ®¼äµÄÊ±¼äÃëÊý */
+// YEAR70_BY_SECONDSï¼š1900-1970å¹´ä¹‹é—´çš„ç§’æ•°
+// 1900-1970æœ‰17ä¸ªé—°å¹´ï¼Œå€¼ä¸º((1970 - 1900) * 365 + 17) * 24 * 60 * 60 = 2208988800UL;
+#define YEAR70_BY_SECONDS 2208988800UL /* 1900å¹´ï½ž1970å¹´ä¹‹é—´çš„æ—¶é—´ç§’æ•° */
 
 /**
  * @struct x_ntp_timestamp_t
- * @brief  NTP Ê±¼ä´Á¡£
+ * @brief  NTP æ—¶é—´æˆ³ã€‚
  */
 typedef struct x_ntp_timestamp_t
 {
-    unsigned int  xut_seconds;    ///< ´Ó 1900ÄêÖÁ½ñËù¾­¹ýµÄÃëÊý
-    unsigned int  xut_fraction;   ///< Ð¡Êý²¿·Ý£¬µ¥Î»ÊÇÎ¢ÃëÊýµÄ4294.967296( = 2^32 / 10^6 )±¶
+    unsigned int  xut_seconds;    ///< ä»Ž 1900å¹´è‡³ä»Šæ‰€ç»è¿‡çš„ç§’æ•°
+    unsigned int  xut_fraction;   ///< å°æ•°éƒ¨ä»½ï¼Œå•ä½æ˜¯å¾®ç§’æ•°çš„4294.967296( = 2^32 / 10^6 )å€
 } x_ntp_timestamp_t;
 
 /**
  * @enum  em_ntp_mode_t
- * @brief NTP¹¤×÷Ä£Ê½µÄÏà¹ØÃ¶¾ÙÖµ¡£
+ * @brief NTPå·¥ä½œæ¨¡å¼çš„ç›¸å…³æžšä¸¾å€¼ã€‚
  */
 typedef enum em_ntp_mode_t
 {
-    ntp_mode_unknow     = 0,  ///< Î´¶¨Òå
-    ntp_mode_initiative = 1,  ///< Ö÷¶¯¶ÔµÈÌåÄ£Ê½
-    ntp_mode_passive    = 2,  ///< ±»¶¯¶ÔµÈÌåÄ£Ê½
-    ntp_mode_client     = 3,  ///< ¿Í»§¶ËÄ£Ê½
-    ntp_mode_server     = 4,  ///< ·þÎñÆ÷Ä£Ê½
-    ntp_mode_broadcast  = 5,  ///< ¹ã²¥Ä£Ê½»ò×é²¥Ä£Ê½
-    ntp_mode_control    = 6,  ///< ±¨ÎÄÎª NTP ¿ØÖÆ±¨ÎÄ
-    ntp_mode_reserved   = 7,  ///< Ô¤Áô¸øÄÚ²¿Ê¹ÓÃ
+    ntp_mode_unknow     = 0,  ///< æœªå®šä¹‰
+    ntp_mode_initiative = 1,  ///< ä¸»åŠ¨å¯¹ç­‰ä½“æ¨¡å¼
+    ntp_mode_passive    = 2,  ///< è¢«åŠ¨å¯¹ç­‰ä½“æ¨¡å¼
+    ntp_mode_client     = 3,  ///< å®¢æˆ·ç«¯æ¨¡å¼
+    ntp_mode_server     = 4,  ///< æœåŠ¡å™¨æ¨¡å¼
+    ntp_mode_broadcast  = 5,  ///< å¹¿æ’­æ¨¡å¼æˆ–ç»„æ’­æ¨¡å¼
+    ntp_mode_control    = 6,  ///< æŠ¥æ–‡ä¸º NTP æŽ§åˆ¶æŠ¥æ–‡
+    ntp_mode_reserved   = 7,  ///< é¢„ç•™ç»™å†…éƒ¨ä½¿ç”¨
 } em_ntp_mode_t;
 
 /**
  * @struct x_ntp_packet_t
- * @brief  NTP ±¨ÎÄ¸ñÊ½¡£
+ * @brief  NTP æŠ¥æ–‡æ ¼å¼ã€‚
  */
 typedef struct x_ntp_packet_t
 {
-    unsigned char     xct_li_ver_mode;      ///< 2 bits£¬·ÉÔ¾Ö¸Ê¾Æ÷£»3 bits£¬°æ±¾ºÅ£»3 bits£¬NTP¹¤×÷    Ä£Ê½£¨²Î¿´ em_ntp_mode_t Ïà¹ØÃ¶¾ÙÖµ£©
-    unsigned char     xct_stratum    ;      ///< ÏµÍ³Ê±ÖÓµÄ²ãÊý£¬È¡Öµ·¶Î§Îª1~16£¬Ëü¶¨ÒåÁËÊ±ÖÓµÄ×¼È·    ¶È¡£²ãÊýÎª1µÄÊ±ÖÓ×¼È·¶È×î¸ß£¬×¼È·¶È´Ó1µ½16ÒÀ´ÎµÝ¼õ£¬²ãÊýÎª16µÄÊ±ÖÓ´¦ÓÚÎ´Í¬²½×´Ì¬£¬²»ÄÜ×÷Îª²Î¿¼Ê±ÖÓ
-    unsigned char     xct_poll       ;      ///< ÂÖÑ¯Ê±¼ä£¬¼´Á½¸öÁ¬ÐøNTP±¨ÎÄÖ®¼äµÄÊ±¼ä¼ä¸ô
-    unsigned char     xct_percision  ;      ///< ÏµÍ³Ê±ÖÓµÄ¾«¶È
+    unsigned char     xct_li_ver_mode;      ///< 2 bitsï¼Œé£žè·ƒæŒ‡ç¤ºå™¨ï¼›3 bitsï¼Œç‰ˆæœ¬å·ï¼›3 bitsï¼ŒNTPå·¥ä½œ    æ¨¡å¼ï¼ˆå‚çœ‹ em_ntp_mode_t ç›¸å…³æžšä¸¾å€¼ï¼‰
+    unsigned char     xct_stratum    ;      ///< ç³»ç»Ÿæ—¶é’Ÿçš„å±‚æ•°ï¼Œå–å€¼èŒƒå›´ä¸º1~16ï¼Œå®ƒå®šä¹‰äº†æ—¶é’Ÿçš„å‡†ç¡®    åº¦ã€‚å±‚æ•°ä¸º1çš„æ—¶é’Ÿå‡†ç¡®åº¦æœ€é«˜ï¼Œå‡†ç¡®åº¦ä»Ž1åˆ°16ä¾æ¬¡é€’å‡ï¼Œå±‚æ•°ä¸º16çš„æ—¶é’Ÿå¤„äºŽæœªåŒæ­¥çŠ¶æ€ï¼Œä¸èƒ½ä½œä¸ºå‚è€ƒæ—¶é’Ÿ
+    unsigned char     xct_poll       ;      ///< è½®è¯¢æ—¶é—´ï¼Œå³ä¸¤ä¸ªè¿žç»­NTPæŠ¥æ–‡ä¹‹é—´çš„æ—¶é—´é—´éš”
+    unsigned char     xct_percision  ;      ///< ç³»ç»Ÿæ—¶é’Ÿçš„ç²¾åº¦
 
-    unsigned int      xut_root_delay     ;  ///< ±¾µØµ½Ö÷²Î¿¼Ê±ÖÓÔ´µÄÍù·µÊ±¼ä
-    unsigned int      xut_root_dispersion;  ///< ÏµÍ³Ê±ÖÓÏà¶ÔÓÚÖ÷²Î¿¼Ê±ÖÓµÄ×î´óÎó²î
-    unsigned int      xut_ref_indentifier;  ///< ²Î¿¼Ê±ÖÓÔ´µÄ±êÊ¶
+    unsigned int      xut_root_delay     ;  ///< æœ¬åœ°åˆ°ä¸»å‚è€ƒæ—¶é’Ÿæºçš„å¾€è¿”æ—¶é—´
+    unsigned int      xut_root_dispersion;  ///< ç³»ç»Ÿæ—¶é’Ÿç›¸å¯¹äºŽä¸»å‚è€ƒæ—¶é’Ÿçš„æœ€å¤§è¯¯å·®
+    unsigned int      xut_ref_indentifier;  ///< å‚è€ƒæ—¶é’Ÿæºçš„æ ‡è¯†
 
-    x_ntp_timestamp_t xtmst_reference;      ///< ÏµÍ³Ê±ÖÓ×îºóÒ»´Î±»Éè¶¨»ò¸üÐÂµÄÊ±¼ä
-    x_ntp_timestamp_t xtmst_originate;      ///< NTPÇëÇó±¨ÎÄÀë¿ª·¢ËÍ¶ËÊ±·¢ËÍ¶ËµÄ±¾µØÊ±¼ä
-    x_ntp_timestamp_t xtmst_receive  ;      ///< NTPÇëÇó±¨ÎÄµ½´ï½ÓÊÕ¶ËÊ±½ÓÊÕ¶ËµÄ±¾µØÊ±¼ä
-    x_ntp_timestamp_t xtmst_transmit ;      ///< Ó¦´ð±¨ÎÄÀë¿ªÓ¦´ðÕßÊ±Ó¦´ðÕßµÄ±¾µØÊ±¼ä
+    x_ntp_timestamp_t xtmst_reference;      ///< ç³»ç»Ÿæ—¶é’Ÿæœ€åŽä¸€æ¬¡è¢«è®¾å®šæˆ–æ›´æ–°çš„æ—¶é—´
+    x_ntp_timestamp_t xtmst_originate;      ///< NTPè¯·æ±‚æŠ¥æ–‡ç¦»å¼€å‘é€ç«¯æ—¶å‘é€ç«¯çš„æœ¬åœ°æ—¶é—´
+    x_ntp_timestamp_t xtmst_receive  ;      ///< NTPè¯·æ±‚æŠ¥æ–‡åˆ°è¾¾æŽ¥æ”¶ç«¯æ—¶æŽ¥æ”¶ç«¯çš„æœ¬åœ°æ—¶é—´
+    x_ntp_timestamp_t xtmst_transmit ;      ///< åº”ç­”æŠ¥æ–‡ç¦»å¼€åº”ç­”è€…æ—¶åº”ç­”è€…çš„æœ¬åœ°æ—¶é—´
 } x_ntp_packet_t;
 
 typedef struct NTPPacket

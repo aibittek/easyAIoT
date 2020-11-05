@@ -81,8 +81,13 @@ void iHttpTest1()
 
 int main(int argc, char *argv[])
 {
-    extern void vAudioRecordTest();
-    vAudioRecordTest();
+    // 录音功能测试
+    // extern void vAudioRecordTest();
+    // vAudioRecordTest();
     
+    // 人脸对比功能检测
+    extern void vTestFaceCompare();
+    vTestFaceCompare();
+
     return 0;
 }

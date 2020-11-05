@@ -690,10 +690,10 @@ int WebSocketTTS(const char *c_pszText)
     // 2. 构造完整的URL
     int iEncodeLen;
     char szFullUrl[4096];
-    char *pstEncode = url_encode(szDate);
-    snprintf(szFullUrl, sizeof(szFullUrl), szBaseUrl, szAuth, pstEncode, "ws-api.xfyun.cn");
+    char szDateEncode[64];
+    urlencode(szDate, szDateEncode);
+    snprintf(szFullUrl, sizeof(szFullUrl), szBaseUrl, szAuth, szDateEncode, "ws-api.xfyun.cn");
     printf("szFullUrl:%s\n", szFullUrl);
-    if (pstEncode) free(pstEncode);
 
     // 3. 连接websocket服务器
     g_szText = (char *)c_pszText;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(EasyIoT VERSION 0.1.0)
+project(EasyAIoT VERSION 0.1.0)
 
 set(CMAKE_C_FLAGS "")
 set(CMAKE_CXX_FLAGS "-fpermissive -D_DEBUG")
@@ -28,7 +28,7 @@ ENDIF ()
 aux_source_directory(./Common DIR_COMMON_SRCS)
 aux_source_directory(./Net DIR_NET_SRCS)
 
-add_executable(EasyIoT 
+add_executable(EasyAIoT 
 				${DIR_SRCS} 
 				${DIR_ALGO_SRCS} 
 				${DIR_APP_SRCS} 
@@ -42,6 +42,6 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
 IF (WIN32)
-target_link_libraries(EasyIoT winmm)
-target_link_libraries(EasyIoT ws2_32)
+target_link_libraries(EasyAIoT winmm)
+target_link_libraries(EasyAIoT ws2_32)
 ENDIF ()

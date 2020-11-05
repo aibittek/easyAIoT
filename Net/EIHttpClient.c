@@ -2,7 +2,8 @@
 #include "EIString.h"
 #include "EISock.h"
 #include "EILog.h"
-
+#include <urlencode.h>
+#include <cstring.h>
 #include "EIHttpClient.h"
 
 bool bHttpUrlParse(const char *pszUrl, EIString** pstHost, EIString** pstPath, uint16_t* pnPort)
@@ -41,10 +42,14 @@ bool bHttpUrlParse(const char *pszUrl, EIString** pstHost, EIString** pstPath, u
         nRet = true;
     } while(0);
 
-    LOG(EDEBUG, "%s,%d,%s\n", pszHost, nPort, pszPathDup);
+    // LOG(EDEBUG, "%s,%d,%s\n", pszHost, nPort, pszPathDup);
 
     *pstHost = stEIStringCopy(pszHost);
-    *pstPath = stEIStringCopy(pszPathDup);
+
+    cstring_new_len(str, strlen(pszPathDup)*2);
+    urlencode(pszPathDup, str->str);
+    *pstPath = stEIStringCopy(str->str);
+    cstring_del(str);
     *pnPort = nPort;
     if (pszUrlDup) free(pszUrlDup);
     if (pszHost) free(pszHost);
@@ -264,7 +269,7 @@ bool bDefaultSockCallback(struct SSockClient *pstClient, void *pvUserData, void 
                 }
             }
         } else { // 解析结束
-            LOG(EDEBUG, "http解析结束");
+            LOG(EVERBOSE, "http解析结束");
             return true;
         }
     }
@@ -335,7 +340,7 @@ bool bHttpConnect(SEIHttpInfo_t *pstHttpInfo, fnSockCallback cb)
             pstRequest->pstPath->sBuffer, pstRequest->pstHost->sBuffer, pstRequest->pstBody->lSize);
         bBody = true;
     }
-    LOG(EDEBUG, "header:#%s#", pstHeader->sBuffer);
+    LOG(EVERBOSE, "header:#%s#", pstHeader->sBuffer);
     pstSockClient->iSend(pstSockClient, pstHeader->sBuffer, strlen(pstHeader->sBuffer));
 
     // 发送额外头信息

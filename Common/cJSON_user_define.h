@@ -72,6 +72,19 @@ extern "C" {
 		ret = -3; \
 		JSON_CTRL(jump); \
 	}
+#define JSON_SERIALIZE_GET_DOUBLE(json_doc, key, value, ret, jump) \
+	if (NULL == json_doc) { \
+		ret = -1; \
+		printf("%s error\n", key); \
+		break; \
+	} \
+	if (cJSON_HasObjectItem(json_doc, key)) { \
+		value = cJSON_GetObjectItem(json_doc, key)->valuedouble; \
+	} \
+	else { \
+		ret = -3; \
+		JSON_CTRL(jump); \
+	}
 #define JSON_SERIALIZE_GET_STRING(json_doc, key, value, ret, jump) \
 	if (NULL == json_doc) { \
 		printf("%s error\n", key); \
