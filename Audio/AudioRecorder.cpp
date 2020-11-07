@@ -301,15 +301,6 @@ bool bAudioStart()
             Recorder.stAudioConfig.pfCallback(Recorder.pvAudioHandle, AUDIO_DATA, 
                 Recorder.stAudioConfig.pvUserData, buffer, bytes_per_frame*frames_read);
         }
-        // if (cb(buffer, bytes_per_frame*frames_read)) capturing = 0;
-        // if ((total_frames_read / rate) >= 5000) {
-        //     capturing = 0;
-        // }
-        // printf("bytes_per_frame:%d,frames_read:%d\n", bytes_per_frame, frames_read);
-        // if (fwrite(buffer, bytes_per_frame, frames_read, file) != frames_read) {
-        //     fprintf(stderr,"Error capturing sample\n");
-        //     break;
-        // }
     }
     free(buffer);
 }
@@ -333,52 +324,17 @@ void vAudioClose()
 /* for test */
 static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvData, int32_t iLen)
 {
-    #if defined(WIN32)
-    DWORD bytesWritten = 0;
-    static HANDLE hFile = NULL;
-    static DWORD totalWriten = 0;
-    if (!hFile)
-    {
-        const char *pathname = (const char *)pvUserData;
-        hFile = CreateFile(pathname,            // File to create.
-                        GENERIC_WRITE,         // Open for writing.
-                        0,                     // Do not share.
-                        NULL,                  // Default security.
-                        CREATE_ALWAYS,         // Overwrite existing.
-                        FILE_ATTRIBUTE_NORMAL, // Normal file.
-                        NULL);
-
-        if (hFile == INVALID_HANDLE_VALUE)
-        {
-            LOG(EDEBUG, "测试创建设备失败");
-            return ;
-        }
-    }
-    
-    if (AUDIO_DATA == iType) {
-        WriteFile(hFile, pvData, iLen, &bytesWritten, NULL);
-        totalWriten += bytesWritten;
-        if (totalWriten > 360*1024) {
-            SetEvent(pvEventHandle);
-        }
-    }
-    else if (AUDIO_CLOSE == iType) {
-        CloseHandle(hFile);
-        hFile = NULL;
-        Recorder.stop();
-    }
-    #elif defined(UNIX) || defined(__linux__)
     uint32_t bytesWritten = 0;
     static uint32_t totalWriten = 0;
     const char *pathname = (const char *)pvUserData;
     static FILE* fp = NULL;
     if (!fp) {
-        fp = fopen(pathname, "w+");
+        fp = fopen(pathname, "wb+");
     }
     if (AUDIO_DATA == iType) {
         if (fp) {
-            bytesWritten = fwrite(pvData, 1, iLen, fp);
-            totalWriten += bytesWritten;
+            bytesWritten = fwrite(pvData, iLen, 1, fp);
+            totalWriten += bytesWritten*iLen;
             LOG(EDEBUG, "totalWriten:%d, iLen:%d", totalWriten, iLen);
             if (totalWriten > 360*1024) {
                 Recorder.stop();
@@ -390,8 +346,6 @@ static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvDa
         fp = NULL;
         Recorder.stop();
     }
-    
-    #endif
 }
 void vAudioRecordTest()
 {
