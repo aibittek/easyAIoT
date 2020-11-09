@@ -82,12 +82,29 @@ void iHttpTest1()
 int main(int argc, char *argv[])
 {
     // 录音功能测试
+    // LOG(EDEBUG, "开始录音测试");
     // extern void vAudioRecordTest();
     // vAudioRecordTest();
     
-    // 人脸对比功能检测
+    // 人脸对比功能测试
+    LOG(EDEBUG, "开始人脸对比测试");
     extern void vTestFaceCompare();
     vTestFaceCompare();
+
+    // 语音识别测试
+    LOG(EDEBUG, "开始语音识别测试");
+    extern void vTestNlp();
+    vTestNlp();
+
+    // 语音合成测试
+    LOG(EDEBUG, "开始语音合成测试");
+    extern void vTestTTS();
+    vTestTTS();
+
+    // 语音转写测试
+    LOG(EDEBUG, "开始实时字幕功能测试");
+    extern void vTestIat();
+    vTestIat();
 
     return 0;
 }

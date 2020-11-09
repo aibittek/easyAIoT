@@ -10,37 +10,6 @@
 
 static const char REQUEST_PARAM[] = "{\"header\":{\"app_id\":\"%s\",\"status\":3},\"parameter\":{\"s67c9c78c\":{\"service_kind\":\"face_compare\",\"face_compare_result\":{\"encoding\":\"utf8\",\"compress\":\"raw\",\"format\":\"json\"}}},\"payload\":{\"input1\":{\"encoding\":\"jpg\",\"status\":3,\"image\":\"%s\"},\"input2\":{\"encoding\":\"jpg\",\"status\":3,\"image\":\"%s\"}}}";
 
-cstring_t * readFile(const char *pathname)
-{
-    cstring_t * cs = NULL;
-    FILE *fp = fopen(pathname, "r");
-    if (!fp) return NULL;
-
-    fseek(fp, 0, SEEK_END);
-    size_t len = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    cstring_new_len(str, len);
-    fread(str->str, len, 1, fp);
-    fclose(fp);
-
-    cs = str;
-
-    return cs;
-}
-
-size_t writeFile(const char *pathname, void *data, int len)
-{
-    cstring_t * cs = NULL;
-    FILE *fp = fopen(pathname, "w+");
-    if (!fp) return 0;
-
-    fwrite(data, len, 1, fp);
-    fclose(fp);
-
-    return len;
-}
-
 cstring_t *pstGenBody(const char *pszAPPID, const char *pszImagePath1, const char *pszImagePath2)
 {
     cstring_t *cs = NULL;

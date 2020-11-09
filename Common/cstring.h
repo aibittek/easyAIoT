@@ -65,14 +65,17 @@ void cstring_uninit(cstring_t *cs);
     cstr = cstring_create(32); \
     cstring_init(cstr);
 
-#define cstring_new_len(cstr, len)  \
-    cstring_t *cstr = NULL;     \
-    cstr = cstring_create(len); \
+#define cstring_new_len(cstr, len) \
+    cstring_t *cstr = NULL;        \
+    cstr = cstring_create(len);    \
     cstring_init(cstr);
 
-#define cstring_del(cstr)  \
-    cstring_uninit(cstr);  \
-    cstring_destory(cstr); \
-    cstr = NULL;
+#define cstring_del(cstr)      \
+    if (cstr)                  \
+    {                          \
+        cstring_uninit(cstr);  \
+        cstring_destory(cstr); \
+        cstr = NULL;           \
+    }
 
 #endif

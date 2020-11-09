@@ -79,7 +79,7 @@ static DWORD CALLBACK RecordCallbackProc(HWAVEIN hwavein, UINT uMsg, DWORD dwIns
             WriteFile(hFile, ((LPWAVEHDR)dwParam1)->lpData, ((LPWAVEHDR)dwParam1)->dwBytesRecorded, &bytesWritten, NULL);
             totalWriten += bytesWritten;
         }
-        if (totalWriten > 350 * 1024)
+        if (totalWriten > 160 * 1024)
         {
             CloseHandle(hFile);
             waveInClose(hwavein);
@@ -336,7 +336,7 @@ static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvDa
             bytesWritten = fwrite(pvData, iLen, 1, fp);
             totalWriten += bytesWritten*iLen;
             LOG(EDEBUG, "totalWriten:%d, iLen:%d", totalWriten, iLen);
-            if (totalWriten > 360*1024) {
+            if (totalWriten > 32000*5) {
                 Recorder.stop();
             }
         }
