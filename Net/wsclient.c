@@ -148,7 +148,7 @@ static int _webSocket_matchShakeKey(unsigned char *myKey, unsigned int myKeyLen,
     unsigned char tempKey[256] = {0};
     //
     retLen = _webSocket_buildRespondShakeKey(myKey, myKeyLen, tempKey);
-    LOG(EDEBUG, "_webSocket_matchShakeKey :\r\n%d : %s\r\n%d : %s\r\n", acceptKeyLen, acceptKey, retLen, tempKey);
+    // LOG(EDEBUG, "_webSocket_matchShakeKey :\r\n%d : %s\r\n%d : %s\r\n", acceptKeyLen, acceptKey, retLen, tempKey);
     //
     if(retLen != acceptKeyLen)
     {
@@ -427,11 +427,8 @@ static bool bDefaultWSCallback(struct SSockClient *pstClient, void *pvUserData, 
                         bRet = pstHttpParser->fwsCallback(pstSockClient, EEIWS_ON_MESSAGE, 
                             pstHttpParser->stWSFrame.pstPlayload->sBuffer, pstHttpParser->stWSFrame.pstPlayload->lSize);
                         vWebsocketFrameClear(&pstHttpParser->stWSFrame);
-                        if (bRet) return bRet;
                     }
-                    else {
-                        return bRet;
-                    }
+                    return bRet;
                 }
             }
         }

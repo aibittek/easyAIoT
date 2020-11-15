@@ -106,18 +106,23 @@ static int iGetResponse(const char *pszData, int iSize)
     // 5. 遍历cw数组,找到w字符串
     JSON_SERIALIZE_GET_STRING_COPY(cw_sub_item, "w", w, sizeof(w), ret, JSON_CTRL_NULL);
     // 6. 获得实时转写的结果，直接打印出来
-    fprintf(stdout, "%s", w);
+    fprintf(stderr, "%s", w);
     JSON_SERIALIZE_ARRAY_FOR_EACH_END();
     JSON_SERIALIZE_ARRAY_FOR_EACH_END();
     JSON_SERIALIZE_END(json_root, ret);
+
+    if (ret < 0) return ret;
     return status;
 }
 
 static void RecordCB(void *pvHandle, int32_t iType, void *pvUserData, void *pvData, int32_t iLen)
 {
     int iRet;
-    char sBase64Buffer[8192] = {0};
-    char szRequest[8192] = {0};
+    static char sBase64Buffer[8192] = {0};
+    static char szRequest[8192] = {0};
+
+    memset(sBase64Buffer, 0, sizeof(sBase64Buffer));
+    memset(szRequest, 0, sizeof(szRequest));
 
     SSockClient_t *pstSock = (SSockClient_t *)pvUserData;
     if (!pstSock)
@@ -126,9 +131,11 @@ static void RecordCB(void *pvHandle, int32_t iType, void *pvUserData, void *pvDa
     switch (iType)
     {
     case AUDIO_OPEN:
+        LOG(EDEBUG, "record device open success");
         break;
     case AUDIO_DATA:
         iBase64Encode(pvData, sBase64Buffer, iLen);
+        // LOG(EDEBUG, "get audio data, len:%d,%s", iLen, sBase64Buffer);
         switch (iStatus)
         {
         case EFRAME_FIRST:
@@ -144,7 +151,7 @@ static void RecordCB(void *pvHandle, int32_t iType, void *pvUserData, void *pvDa
         default:
             break;
         }
-        pstSock->iSend(pstSock, szRequest, strlen(szRequest));
+        iWSSend(pstSock, szRequest, strlen(szRequest), EEIWS_OPCODE_TXTDATA);
         break;
     case AUDIO_CLOSE:
         Recorder.stop();
@@ -169,11 +176,12 @@ static void *pvRealRecordThread(void *params)
 
 static bool bWSCallback(SSockClient_t *pstSock, EEIWS_MESSAGE eType, void *pvMessage, int iLen)
 {
+    int iRet = 0;
     bool bEnd = false;
     switch (eType)
     {
-    case EEIWS_ON_HAND_SHAKE: // websocket服务握手成功
-        LOG(EDEBUG, "收到了101消息，并且验证key成功");
+    case EEIWS_ON_HAND_SHAKE: // 收到了101消息，websocket服务握手成功
+        LOG(EDEBUG, "websocket handshake success");
         ThreadFun funArr[1];
         funArr[0].fun = pvRealRecordThread;
         funArr[0].params = (void *)pstSock;
@@ -181,17 +189,24 @@ static bool bWSCallback(SSockClient_t *pstSock, EEIWS_MESSAGE eType, void *pvMes
 
         break;
     case EEIWS_ON_MESSAGE: // 收到websocket消息
-        if (2 == iGetResponse(pvMessage, iLen))
-        {
-            Recorder.close();
-            bEnd = true;
+        iRet = iGetResponse(pvMessage, iLen);
+        if (2 == iRet) {
+            // LOG(EDEBUG, "response finish");
+            // Recorder.close();
+            // bEnd = true;
+        } else if (iRet < 0) {
+            LOG(EDEBUG, "len:%d, recv:%s", iLen, pvMessage);
+            // Recorder.close();
+            // bEnd = true;
+        } else {
+            // LOG(EDEBUG, "msg:%s", pvMessage);
         }
         break;
     case EEIWS_ON_CLOSE: // 断开websocket连接
-        LOG(EDEBUG, "收到了关闭消息");
+        LOG(EDEBUG, "websocket close");
         break;
     case EEIWS_ON_ERROR: // websocket错误信息
-        LOG(EDEBUG, "收到了错误消息");
+        LOG(EDEBUG, "websocket error");
         break;
     default:
         break;
@@ -216,11 +231,7 @@ void iat(const char *appid, const char *key, const char *secret)
     LOG(EDEBUG, "url:%s", szFullUrl);
 
     // 3. 连接服务器
-    SEIHttpInfo_t stHttpInfo;
-    bHttpOpen(&stHttpInfo, szFullUrl, NULL, NULL, 0);
-    bWSConnect(&stHttpInfo, bWSCallback);
-
-    bHttpClose(&stHttpInfo);
+    bWebsocketConnect(szFullUrl, bWSCallback);
 }
 
 void vTestIat()

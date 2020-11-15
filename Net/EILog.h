@@ -4,11 +4,12 @@
 // 调试代码
 enum EDEBUG
 {
-    EVERBOSE,
+    ETRACE,
     EDEBUG,
     EINFO,
-    EWARNNING,
+    EWARN,
     EERROR,
+    EFATAL,
     EDEBUG_MAX
 };
 
@@ -20,7 +21,7 @@ extern "C" {
 #define LOG(level, format, ...) \
     { \
         if (level >= EI_DEBUG_LEVEL) { \
-            printf("[%s %s line:%d]",__FILE__,__FUNCTION__,__LINE__); \
+            printf("[%s][%s %s line:%d]", #level, __FILE__,__FUNCTION__,__LINE__); \
             printf(format, ##__VA_ARGS__); \
             printf("\n"); \
         } \

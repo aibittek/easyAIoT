@@ -133,7 +133,7 @@ static cstring_t *getJsonResult(const char *szResponse)
     JSON_SERIALIZE_ARRAY_FOR_EACH_START(json_array, sub_item, pos, total);
     JSON_SERIALIZE_GET_OBJECT(sub_item, "intent", intent_obj, iRet, JSON_CTRL_CONTINUE);
     JSON_SERIALIZE_GET_STRING(intent_obj, "text", pszText, iRet, JSON_CTRL_NULL);
-    LOG(EVERBOSE, "识别内容：%s", pszText);
+    LOG(ETRACE, "识别内容：%s", pszText);
     JSON_SERIALIZE_GET_ARRAY(intent_obj, "voice_answer", sub_voice_item, iRet, JSON_CTRL_CONTINUE);
     JSON_SERIALIZE_ARRAY_FOR_EACH_START(sub_voice_item, voice_item, voice_pos, voice_total);
     JSON_SERIALIZE_GET_STRING(voice_item, "content", pszText, iRet, JSON_CTRL_CONTINUE);

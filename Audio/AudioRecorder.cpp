@@ -62,7 +62,6 @@ static DWORD CALLBACK RecordCallbackProc(HWAVEIN hwavein, UINT uMsg, DWORD dwIns
     switch (uMsg)
     {
     case WIM_OPEN:
-        LOG(EDEBUG, "\n设备已经打开...\n");
         if (Recorder.stAudioConfig.pfCallback)
         {
             Recorder.stAudioConfig.pfCallback(Recorder.pvAudioHandle, AUDIO_OPEN, Recorder.stAudioConfig.pvUserData, NULL, 0);
@@ -70,7 +69,7 @@ static DWORD CALLBACK RecordCallbackProc(HWAVEIN hwavein, UINT uMsg, DWORD dwIns
         break;
 
     case WIM_DATA:
-        LOG(EVERBOSE, "\n缓冲区%d存满...\n", (int)((LPWAVEHDR)dwParam1)->dwUser);
+        // LOG(ETRACE, "\n缓冲区%d存满...\n", (int)((LPWAVEHDR)dwParam1)->dwUser);
 #if defined(TEST_RECORD_TO_FILE)
         if (hFile)
         {

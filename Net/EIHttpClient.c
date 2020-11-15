@@ -269,7 +269,7 @@ bool bDefaultSockCallback(struct SSockClient *pstClient, void *pvUserData, void 
                 }
             }
         } else { // 解析结束
-            LOG(EVERBOSE, "http解析结束");
+            LOG(ETRACE, "http解析结束");
             return true;
         }
     }
@@ -340,7 +340,7 @@ bool bHttpConnect(SEIHttpInfo_t *pstHttpInfo, fnSockCallback cb)
             pstRequest->pstPath->sBuffer, pstRequest->pstHost->sBuffer, pstRequest->pstBody->lSize);
         bBody = true;
     }
-    LOG(EVERBOSE, "header:#%s#", pstHeader->sBuffer);
+    LOG(ETRACE, "header:#%s#", pstHeader->sBuffer);
     pstSockClient->iSend(pstSockClient, pstHeader->sBuffer, strlen(pstHeader->sBuffer));
 
     // 发送额外头信息

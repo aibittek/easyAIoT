@@ -14,16 +14,16 @@ void vGetAuth(const char *pszAPPKey, const char *pszAPPSecret, const char *pszBa
     char szAuthOri[4096];
     snprintf(szSignatureOrigin, 1024, "host: %s\ndate: %s\n%s",
             pszBaseUrl, pszGMTDate, pszReuqestLine);
-    LOG(EVERBOSE, "%s", szSignatureOrigin);
+    LOG(ETRACE, "%s", szSignatureOrigin);
     hmac_sha256(szSignatureOrigin, strlen(szSignatureOrigin), pszAPPSecret, strlen(pszAPPSecret), szSignatureOriginSha);
-    // LOG(EVERBOSE, "%s\n", szSignatureOriginSha);
+    // LOG(ETRACE, "%s\n", szSignatureOriginSha);
     iBase64Encode(szSignatureOriginSha, szSignatureOriginBase64, 32);
-    LOG(EVERBOSE, "%s", szSignatureOriginBase64);
+    LOG(ETRACE, "%s", szSignatureOriginBase64);
     snprintf(szAuthOri, 4096, "api_key=\"%s\", algorithm=\"hmac-sha256\", headers=\"host date request-line\", signature=\"%s\"",
             pszAPPKey, szSignatureOriginBase64);
-    LOG(EVERBOSE, "%s", szAuthOri);
+    LOG(ETRACE, "%s", szAuthOri);
     iBase64Encode(szAuthOri, pAuthData, strlen(szAuthOri));
-    LOG(EVERBOSE, "%s", pAuthData);
+    LOG(ETRACE, "%s", pAuthData);
 }
 
 void testGetAuth()

@@ -96,12 +96,15 @@ cstring_t *getTTS(const char *appid, const char *key, const char *app_secret, co
 
     // 3. 连接websocket服务器
     g_total = (void *)text;
+#if 0
     SEIHttpInfo_t stHttpInfo;
     bHttpOpen(&stHttpInfo, szFullUrl, NULL, NULL, 0);
     bWSConnect(&stHttpInfo, bWSCallback);
 
     bHttpClose(&stHttpInfo);
-
+#else
+    bWebsocketConnect(szFullUrl, bWSCallback);
+#endif
     return NULL;
 }
 
