@@ -65,7 +65,7 @@ typedef struct SEIWSFrame
     unsigned char sMask[4];
     EIString *pstPlayload;
 }SEIWSFrame_t;
-typedef bool (*fnWebsocketCallback)(SSockClient_t *pstSock, EEIWS_MESSAGE eType, void *pvMessage, int iLen);
+typedef bool (*fnWebsocketCallback)(SSockClient_t *pstSock, void *pvCBUserData, EEIWS_MESSAGE eType, void *pvMessage, int iLen);
 typedef struct SEIHttpParser{
     int8_t sRecvBuffer[4096*2];     // 接收数据缓存
     int32_t iCurLen;                // 当前处理得数据长度
@@ -80,6 +80,7 @@ typedef struct SEIHttpParser{
     bool bBodyEnd;                  // body部分是否解析完成
     bool bWebsocket;                // 是否是websocket协议
     fnWebsocketCallback fwsCallback;// websocket解析回调函数
+    void *pvCBUserData;             // 回调用户数据
     ring_buffer_t stRingBuffer;     // websocket 解码数据ring buffer
     SEIWSFrame_t stWSFrame;         // websocket frame
 }SEIHttpParser_t;

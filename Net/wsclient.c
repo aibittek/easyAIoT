@@ -9,13 +9,6 @@
 #include "md5.h"
 #include "wsclient.h"
 
-#define APPID "5d2f27d2"
-#define APP_SECRET "8110566cd9dd13066f9a1e38aeb12a48"
-#define APP_KEY "a8331910d59d41deea317a3c76d47b60"
-#define TTS_PARAM "{\"result_level\":\"plain\",\"auth_id\":\"27853aa9684eb19789b784a89ea5befd\",\"data_type\":\"audio\",\"sample_rate\":\"16000\",\"scene\":\"main_box\"}"
-#define TTS_URL "https://ws-api.xfyun.cn/v2/tts"
-#define TTS_TEXT "讯飞开放平台"
-
 static int iGetGMTDate(char *szDate, int iLen)
 {
     int iCount = 3;
@@ -386,12 +379,12 @@ static bool bDefaultWSCallback(struct SSockClient *pstClient, void *pvUserData, 
                         if(_webSocket_matchShakeKey(pstHttpRequest->sShakeKey, 
                             strlen(pstHttpRequest->sShakeKey), 
                             (*ppstValue)->sBuffer, (*ppstValue)->lSize) == 0) {
-                            pstHttpParser->fwsCallback(pstSockClient, EEIWS_ON_HAND_SHAKE, NULL, 0);
+                            pstHttpParser->fwsCallback(pstSockClient, pstHttpParser->pvCBUserData, EEIWS_ON_HAND_SHAKE, NULL, 0);
                             ring_buffer_init(&pstHttpParser->stRingBuffer);
                             break;
                         } else {
                             const char *pszError = "not match shakekey";
-                            pstHttpInfo->stHttpParser.fwsCallback(pstSockClient, EEIWS_ON_ERROR, (void *)pszError, strlen(pszError)+1);
+                            pstHttpInfo->stHttpParser.fwsCallback(pstSockClient, pstHttpParser->pvCBUserData, EEIWS_ON_ERROR, (void *)pszError, strlen(pszError)+1);
                             return true;
                         }
                     }
@@ -424,7 +417,7 @@ static bool bDefaultWSCallback(struct SSockClient *pstClient, void *pvUserData, 
                 while (ring_buffer_num_items(&pstHttpParser->stRingBuffer) > 0) {
                     if (bParseWebsocketFrame(&pstHttpParser->stRingBuffer, &pstHttpParser->stWSFrame)) {
                         // LOG(EDEBUG, "%s", pstHttpParser->stWSFrame.pstPlayload->sBuffer);
-                        bRet = pstHttpParser->fwsCallback(pstSockClient, EEIWS_ON_MESSAGE, 
+                        bRet = pstHttpParser->fwsCallback(pstSockClient, pstHttpParser->pvCBUserData, EEIWS_ON_MESSAGE, 
                             pstHttpParser->stWSFrame.pstPlayload->sBuffer, pstHttpParser->stWSFrame.pstPlayload->lSize);
                         vWebsocketFrameClear(&pstHttpParser->stWSFrame);
                     }
@@ -441,7 +434,7 @@ static bool bDefaultWSCallback(struct SSockClient *pstClient, void *pvUserData, 
     return bRet;
 }
 
-bool bWSConnect(SEIHttpInfo_t *pstHttpInfo, fnWebsocketCallback cb)
+bool bWSConnect(SEIHttpInfo_t *pstHttpInfo, fnWebsocketCallback cb, void *pvUserData)
 {
     char request[4096];
     SEIHttpRequest_t *pstRequest = &pstHttpInfo->stRequest;
@@ -460,7 +453,7 @@ bool bWSConnect(SEIHttpInfo_t *pstHttpInfo, fnWebsocketCallback cb)
     int iLen = snprintf(request, sizeof(request), base_header, 
         pstRequest->pstPath->sBuffer, pstRequest->pstHost->sBuffer, 
         pstRequest->nPort, pstRequest->sShakeKey);
-    LOG(EDEBUG, "request:%s", request);
+    LOG(ETRACE, "request:%s", request);
 
     // 连接websocket服务端
     int iLoop = 1;
@@ -468,15 +461,23 @@ bool bWSConnect(SEIHttpInfo_t *pstHttpInfo, fnWebsocketCallback cb)
     pstSockClient->iSend(pstSockClient, request, iLen);
     pstHttpParser->bWebsocket = true;
     pstHttpParser->fwsCallback = cb;
+    pstHttpParser->pvCBUserData = pvUserData;
     pstSockClient->bEventLoop(pstSockClient, bDefaultWSCallback, pstHttpInfo, &iLoop, 1000);
     return true;
 }
 
-bool bWebsocketConnect(const char *c_pszUrl, fnWebsocketCallback cb) {
+bool bWebsocketConnect(const char *c_pszUrl, fnWebsocketCallback cb, void *pvUserData) 
+{
+    bool bRet = false;
     SEIHttpInfo_t stHttpInfo;
-    bHttpOpen(&stHttpInfo, c_pszUrl, NULL, NULL, 0);
-    bWSConnect(&stHttpInfo, cb);
+    do {
+        bRet = bHttpOpen(&stHttpInfo, c_pszUrl, NULL, NULL, 0);
+        if (!bRet) break;
+        bRet = bWSConnect(&stHttpInfo, cb, pvUserData);
+        if (!bRet) break;
+    } while(0);
     bHttpClose(&stHttpInfo);
+    return bRet;
 }
 /*******************************************************************************
  * 名称: webSocket_enPackage

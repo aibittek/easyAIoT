@@ -4,7 +4,6 @@
 #include "EILog.h"
 #include "nlp.h"
 #include "EIHttpClient.h"
-#include "EasyIoT.h"
 #include "base64.h"
 #include "md5.h"
 #if defined(UNIX)
@@ -181,28 +180,4 @@ cstring_t *getNlpResult(const char *pszAppid, const char *pszKey, const char *ps
     cstring_del(pHeader);
 
     return pResult;
-}
-
-void vTestNlp()
-{
-    const char *pszAppid = "5d2f27d2";
-    const char *pszKey = "a605c4712faefae730cc84b62c0eb92f";
-    const char *pszParam = "{\"result_level\":\"plain\",\"auth_id\":\"27853aa9684eb19789b784a89ea5befd\",\"data_type\":\"audio\",\"sample_rate\":\"16000\",\"scene\":\"main_box\"}";
-
-    cstring_t *pAudioData = readFile("../Res/test.pcm");
-    if (!pAudioData)
-    {
-        LOG(EERROR, "read audio file error");
-        return;
-    }
-    LOG(EDEBUG, "pcm len:%d", pAudioData->length(pAudioData));
-
-    cstring_t *pResult = getNlpResult(pszAppid, pszKey, pszParam, pAudioData->str, pAudioData->len);
-    if (pResult)
-    {
-        LOG(EDEBUG, "识别结果：%s", pResult->str);
-        cstring_del(pResult);
-    }
-
-    cstring_del(pAudioData);
 }

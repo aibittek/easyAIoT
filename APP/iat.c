@@ -31,7 +31,7 @@ static void vFirstRequest(const char *pAudio, char *pszRequest, int iLen)
     JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "language", "zh_cn");
     JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "domain", "iat");
     JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "accent", "mandarin");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "dwa", "wpgs");
+    // JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "dwa", "wpgs");
     // JSON_DESERIALIZE_CREATE_END(json_business_obj);
 
     JSON_DESERIALIZE_CREATE_OBJECT_START(json_data_obj);
@@ -174,7 +174,7 @@ static void *pvRealRecordThread(void *params)
     return NULL;
 }
 
-static bool bWSCallback(SSockClient_t *pstSock, EEIWS_MESSAGE eType, void *pvMessage, int iLen)
+static bool bWSCallback(SSockClient_t *pstSock, void* pUserData, EEIWS_MESSAGE eType, void *pvMessage, int iLen)
 {
     int iRet = 0;
     bool bEnd = false;
@@ -220,29 +220,20 @@ void iat(const char *appid, const char *key, const char *secret)
     char szAuth[1024], szDate[64];
     char *szBaseUrl = "ws://iat-api.xfyun.cn/v2/iat?host=%s&date=%s&authorization=%s";
 
-    // 1. 构造websocket auth字段
-    datetime.format("GMT", szDate, sizeof(szDate));
-    vGetAuth(key, secret, "iat-api.xfyun.cn",
-             "GET /v2/iat HTTP/1.1", szDate, szAuth, sizeof(szAuth));
-    LOG(EDEBUG, "auth:%s\n", szAuth);
-
-    // 2. 构造完整的URL
-    snprintf(szFullUrl, sizeof(szFullUrl), szBaseUrl, "iat-api.xfyun.cn", szDate, szAuth);
-    LOG(EDEBUG, "url:%s", szFullUrl);
-
-    // 3. 连接服务器
-    bWebsocketConnect(szFullUrl, bWSCallback);
-}
-
-void vTestIat()
-{
-    const char *appid = "5d2f27d2";
-    const char *key = "a8331910d59d41deea317a3c76d47b60";
-    const char *secret = "8110566cd9dd13066f9a1e38aeb12a48";
-
     strcpy(appconfig.appid, appid);
     strcpy(appconfig.appkey, key);
     strcpy(appconfig.appsecret, secret);
 
-    iat(appid, key, secret);
+    // 1. 构造websocket auth字段
+    datetime.format("GMT", szDate, sizeof(szDate));
+    vGetAuth(key, secret, "iat-api.xfyun.cn",
+             "GET /v2/iat HTTP/1.1", szDate, szAuth, sizeof(szAuth));
+    LOG(ETRACE, "auth:%s\n", szAuth);
+
+    // 2. 构造完整的URL
+    snprintf(szFullUrl, sizeof(szFullUrl), szBaseUrl, "iat-api.xfyun.cn", szDate, szAuth);
+    LOG(ETRACE, "url:%s", szFullUrl);
+
+    // 3. 连接服务器
+    bWebsocketConnect(szFullUrl, bWSCallback, NULL);
 }

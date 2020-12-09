@@ -8,7 +8,12 @@
 
 #include "tts.h"
 
-static int iWriteData(const char *pszData, size_t dwLen)
+typedef struct ttsPriData {
+    char *pText;
+    char *pPath;
+}ttsPriData_t;
+
+static int iWriteData(const char *pszData, size_t dwLen, const char *pathname)
 {
     int iRet;
     int iCode;
@@ -16,7 +21,6 @@ static int iWriteData(const char *pszData, size_t dwLen)
     char *pszAudioItem;
     char *pszAudio = NULL;
     int iStatus = 0;
-    // if (fp) fseek(fp, 0, SEEK_SET);
     JSON_SERIALIZE_START(json_root, pszData, iRet);
     JSON_SERIALIZE_GET_INT(json_root, "code", iCode, iRet, JSON_CTRL_BREAK);
     JSON_SERIALIZE_GET_STRING(json_root, "desc", szDesc, iRet, JSON_CTRL_NULL);
@@ -31,7 +35,7 @@ static int iWriteData(const char *pszData, size_t dwLen)
         pszAudio = (char *)malloc(iAudioLen);
         memset(pszAudio, 0, iAudioLen);
         iAudioLen = iBase64Decode(pszAudioItem, pszAudio);
-        fp = fopen("./tts.pcm", "ab");
+        fp = fopen(pathname, "ab");
         int iWriteLen = fwrite(pszAudio, 1, iAudioLen, fp);
         if (fp)
             fclose(fp);
@@ -43,25 +47,24 @@ static int iWriteData(const char *pszData, size_t dwLen)
     return iStatus;
 }
 
-static const void *g_total = NULL;
-static bool bWSCallback(SSockClient_t *pstSock, EEIWS_MESSAGE eType, void *pvMessage, int iLen)
+static bool bWSCallback(SSockClient_t *pstSock, void *pvData, EEIWS_MESSAGE eType, void *pvMessage, int iLen)
 {
     bool bEnd = false;
+    ttsPriData_t *pszOrigin = (ttsPriData_t *)pvData;
     switch (eType)
     {
     case EEIWS_ON_HAND_SHAKE: // websocket服务握手成功
         LOG(EDEBUG, "收到了101消息，并且验证key成功");
         char szText[1024] = {0};
         char szData[4096] = {0};
-        const char *pszOrigin = g_total;
-        iBase64Encode(pszOrigin, szText, strlen(pszOrigin));
+        iBase64Encode(pszOrigin->pText, szText, strlen(pszOrigin->pText));
         sprintf(szData, "{\"common\":{\"app_id\":\"%s\"},\"business\":{\"aue\":\"raw\",\"auf\":\"audio/L16;rate=16000\",\"vcn\":\"xiaoyan\",\"tte\":\"utf8\",\"ent\":\"aisound\"},\"data\":{\"status\":2,\"text\":\"%s\"}}", appconfig.appid, szText);
         iWSSend(pstSock, szData, strlen(szData), EEIWS_OPCODE_TXTDATA);
         break;
     case EEIWS_ON_MESSAGE: // 收到websocket消息
-        LOG(EDEBUG, "收到了消息：%s", pvMessage);
+        // LOG(EDEBUG, "收到了消息：%s", pvMessage);
         {
-            if (2 == iWriteData(pvMessage, iLen)) {
+            if (2 == iWriteData(pvMessage, iLen, pszOrigin->pPath)) {
                 bEnd = true;
             }
         }
@@ -78,10 +81,16 @@ static bool bWSCallback(SSockClient_t *pstSock, EEIWS_MESSAGE eType, void *pvMes
     return bEnd;
 }
 
-cstring_t *getTTS(const char *appid, const char *key, const char *app_secret, const char *text)
+bool getTTS(const char *appid, const char *key, const char *app_secret, 
+    const char *text, const char *pathname)
 {
     char szFullUrl[4096];
     char szAuth[1024], szDate[64];
+
+    if (!appid || !key || !app_secret) return NULL;
+    strcpy(appconfig.appid, appid);
+    strcpy(appconfig.appkey, key);
+    strcpy(appconfig.appsecret, app_secret);
 
     char *szBaseUrl = "ws://tts-api.xfyun.cn/v2/tts?authorization=%s&date=%s&host=%s";
 
@@ -95,30 +104,8 @@ cstring_t *getTTS(const char *appid, const char *key, const char *app_secret, co
     LOG(EDEBUG, "url:%s", szFullUrl);
 
     // 3. 连接websocket服务器
-    g_total = (void *)text;
-#if 0
-    SEIHttpInfo_t stHttpInfo;
-    bHttpOpen(&stHttpInfo, szFullUrl, NULL, NULL, 0);
-    bWSConnect(&stHttpInfo, bWSCallback);
-
-    bHttpClose(&stHttpInfo);
-#else
-    bWebsocketConnect(szFullUrl, bWSCallback);
-#endif
-    return NULL;
-}
-
-void vTestTTS()
-{
-    const char *appid = "5e5f1e5e";
-    const char *app_secret = "3e45fc07dcdcf5306863c3321a4c9771";
-    const char *app_key = "632bfb3990e4848cb8cb568182cda851";
-
-    strcpy(appconfig.appid, appid);
-    strcpy(appconfig.appkey, app_key);
-    strcpy(appconfig.appsecret, app_secret);
-
-    cstring_t *pcm = getTTS(appid, app_key, app_secret, "欢迎来到比特人生的世界");
-    while (1)
-        ;
+    ttsPriData_t stPriData = {
+        text, pathname
+    };
+    return bWebsocketConnect(szFullUrl, bWSCallback, &stPriData);
 }

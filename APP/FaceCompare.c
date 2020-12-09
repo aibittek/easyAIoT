@@ -152,12 +152,3 @@ double fFaceCompare(const char *pszAPPID,
 
     return fScore;
 }
-
-void vTestFaceCompare()
-{
-    const char *appid = "5e5f1e5e";
-    const char *app_secret = "3e45fc07dcdcf5306863c3321a4c9771";
-    const char *app_key = "632bfb3990e4848cb8cb568182cda851";
-    double fScore = fFaceCompare(appid, app_secret, app_key, "../Res/1.jpg", "../Res/2.jpg");
-    printf("face compare score:%.2f\n", fScore);
-}
