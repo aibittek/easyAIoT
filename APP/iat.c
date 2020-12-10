@@ -23,62 +23,62 @@ typedef enum EFRAME_TYPE
 
 static void vFirstRequest(const char *pAudio, char *pszRequest, int iLen)
 {
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_common_obj);
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_common_obj, "app_id", appconfig.appid);
-    // JSON_DESERIALIZE_CREATE_END(json_common_obj);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_common_obj);
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_common_obj, "app_id", appconfig.appid);
+    // JSON_SERIALIZE_CREATE_END(json_common_obj);
 
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_business_obj);
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "language", "zh_cn");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "domain", "iat");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "accent", "mandarin");
-    // JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "dwa", "wpgs");
-    // JSON_DESERIALIZE_CREATE_END(json_business_obj);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_business_obj);
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "language", "zh_cn");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "domain", "iat");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "accent", "mandarin");
+    // JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_business_obj, "dwa", "wpgs");
+    // JSON_SERIALIZE_CREATE_END(json_business_obj);
 
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_data_obj);
-    JSON_DESERIALIZE_ADD_INT_TO_OBJECT(json_data_obj, "status", EFRAME_FIRST);
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "format", "audio/L16;rate=16000");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "encoding", "raw");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "audio", pAudio);
-    // JSON_DESERIALIZE_CREATE_END(json_data_obj);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_data_obj);
+    JSON_SERIALIZE_ADD_INT_TO_OBJECT(json_data_obj, "status", EFRAME_FIRST);
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "format", "audio/L16;rate=16000");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "encoding", "raw");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "audio", pAudio);
+    // JSON_SERIALIZE_CREATE_END(json_data_obj);
 
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_frame_obj);
-    JSON_DESERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "common", json_common_obj);
-    JSON_DESERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "business", json_business_obj);
-    JSON_DESERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "data", json_data_obj);
-    JSON_DESERIALIZE_STRING(json_frame_obj, pszRequest, iLen);
-    JSON_DESERIALIZE_CREATE_END(json_frame_obj);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_frame_obj);
+    JSON_SERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "common", json_common_obj);
+    JSON_SERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "business", json_business_obj);
+    JSON_SERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "data", json_data_obj);
+    JSON_SERIALIZE_STRING(json_frame_obj, pszRequest, iLen);
+    JSON_SERIALIZE_CREATE_END(json_frame_obj);
 }
 
 static void vContinueRequest(const char *pAudio, char *pszRequest, int iLen)
 {
     // 构造data中的字段
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_data_obj);
-    JSON_DESERIALIZE_ADD_INT_TO_OBJECT(json_data_obj, "status", EFRAME_CONTINE);
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "format", "audio/L16;rate=16000");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "encoding", "raw");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "audio", pAudio);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_data_obj);
+    JSON_SERIALIZE_ADD_INT_TO_OBJECT(json_data_obj, "status", EFRAME_CONTINE);
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "format", "audio/L16;rate=16000");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "encoding", "raw");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "audio", pAudio);
 
     // 把以上构造的对象json_data_obj放到data所表述的json_frame_obj中
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_frame_obj);
-    JSON_DESERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "data", json_data_obj);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_frame_obj);
+    JSON_SERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "data", json_data_obj);
     // 把json对象序列化到pszRequest数组中，用于后续的发送
-    JSON_DESERIALIZE_STRING(json_frame_obj, pszRequest, iLen);
-    JSON_DESERIALIZE_CREATE_END(json_frame_obj);
+    JSON_SERIALIZE_STRING(json_frame_obj, pszRequest, iLen);
+    JSON_SERIALIZE_CREATE_END(json_frame_obj);
 }
 
 static void vLastRequest(const char *pAudio, char *pszRequest, int iLen)
 {
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_data_obj);
-    JSON_DESERIALIZE_ADD_INT_TO_OBJECT(json_data_obj, "status", EFRAME_LAST);
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "format", "audio/L16;rate=16000");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "encoding", "raw");
-    JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "audio", pAudio);
-    // JSON_DESERIALIZE_CREATE_END(json_data_obj);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_data_obj);
+    JSON_SERIALIZE_ADD_INT_TO_OBJECT(json_data_obj, "status", EFRAME_LAST);
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "format", "audio/L16;rate=16000");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "encoding", "raw");
+    JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_data_obj, "audio", pAudio);
+    // JSON_SERIALIZE_CREATE_END(json_data_obj);
 
-    JSON_DESERIALIZE_CREATE_OBJECT_START(json_frame_obj);
-    JSON_DESERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "data", json_data_obj);
-    JSON_DESERIALIZE_STRING(json_frame_obj, pszRequest, iLen);
-    JSON_DESERIALIZE_CREATE_END(json_frame_obj);
+    JSON_SERIALIZE_CREATE_OBJECT_START(json_frame_obj);
+    JSON_SERIALIZE_ADD_OBJECT_TO_OBJECT(json_frame_obj, "data", json_data_obj);
+    JSON_SERIALIZE_STRING(json_frame_obj, pszRequest, iLen);
+    JSON_SERIALIZE_CREATE_END(json_frame_obj);
 }
 
 static int iGetResponse(const char *pszData, int iSize)
@@ -88,28 +88,28 @@ static int iGetResponse(const char *pszData, int iSize)
     char sid[1024];
     int status = 0;
     char w[128];
-    JSON_SERIALIZE_START(json_root, pszData, ret);
-    JSON_SERIALIZE_GET_INT(json_root, "code", code, ret, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_GET_STRING_COPY(json_root, "message", message, sizeof(message), ret, JSON_CTRL_NULL);
-    JSON_SERIALIZE_GET_STRING_COPY(json_root, "sid", sid, sizeof(sid), ret, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_START(json_root, pszData, ret);
+    JSON_DESERIALIZE_GET_INT(json_root, "code", code, ret, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_STRING_COPY(json_root, "message", message, sizeof(message), ret, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_GET_STRING_COPY(json_root, "sid", sid, sizeof(sid), ret, JSON_CTRL_NULL);
     // 1. 解析data对象，不存在就break出去，不再解析
-    JSON_SERIALIZE_GET_OBJECT(json_root, "data", json_data, ret, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_GET_INT(json_data, "status", status, ret, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_OBJECT(json_root, "data", json_data, ret, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_INT(json_data, "status", status, ret, JSON_CTRL_BREAK);
     // 2. 解析data中的result对象，不存在就break出去，不再解析
-    JSON_SERIALIZE_GET_OBJECT(json_data, "result", json_result, ret, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_OBJECT(json_data, "result", json_result, ret, JSON_CTRL_BREAK);
     // 3. 解析result中的ws数组，不存在就break出去
-    JSON_SERIALIZE_GET_ARRAY(json_result, "ws", json_array, ret, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_ARRAY_FOR_EACH_START(json_array, sub_item, pos, total);
+    JSON_DESERIALIZE_GET_ARRAY(json_result, "ws", json_array, ret, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_START(json_array, sub_item, pos, total);
     // 4. 解析ws数组中的cw数组，不存在就break出去
-    JSON_SERIALIZE_GET_ARRAY(sub_item, "cw", cw_item, ret, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_ARRAY_FOR_EACH_START(cw_item, cw_sub_item, pos, total);
+    JSON_DESERIALIZE_GET_ARRAY(sub_item, "cw", cw_item, ret, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_START(cw_item, cw_sub_item, pos, total);
     // 5. 遍历cw数组,找到w字符串
-    JSON_SERIALIZE_GET_STRING_COPY(cw_sub_item, "w", w, sizeof(w), ret, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_GET_STRING_COPY(cw_sub_item, "w", w, sizeof(w), ret, JSON_CTRL_NULL);
     // 6. 获得实时转写的结果，直接打印出来
     fprintf(stderr, "%s", w);
-    JSON_SERIALIZE_ARRAY_FOR_EACH_END();
-    JSON_SERIALIZE_ARRAY_FOR_EACH_END();
-    JSON_SERIALIZE_END(json_root, ret);
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_END();
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_END();
+    JSON_DESERIALIZE_END(json_root, ret);
 
     if (ret < 0) return ret;
     return status;

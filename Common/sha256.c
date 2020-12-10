@@ -335,6 +335,25 @@ void mbedtls_sha256( const unsigned char *input, size_t ilen,
     mbedtls_sha256_free( &ctx );
 }
 
+void sha256(const unsigned char *input, size_t ilen, unsigned char *out)
+{
+    int i;
+    unsigned char output[32];
+    mbedtls_sha256_context ctx;
+
+    mbedtls_sha256_init( &ctx );
+    mbedtls_sha256_starts( &ctx, 0 );
+    mbedtls_sha256_update( &ctx, input, ilen );
+    mbedtls_sha256_finish( &ctx, output );
+    mbedtls_sha256_free( &ctx );
+
+    for (i = 0; i < 32; i++)
+    {
+        sprintf(out + i * 2, "%2.2x", output[i]);
+    }
+    out[i*2] = '\0';
+}
+
 #if defined(MBEDTLS_SELF_TEST)
 /*
  * FIPS-180-2 test vectors

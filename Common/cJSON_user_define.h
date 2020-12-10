@@ -18,25 +18,44 @@ extern "C" {
 		else if (JSON_CTRL_CONTINUE) continue; \
 	}
 
-#define JSON_DESERIALIZE_CREATE_OBJECT_START(json_obj) \
+// 创建Json对象，序列化对象名：json_obj
+#define JSON_SERIALIZE_CREATE_OBJECT_START(json_obj) \
 	cJSON *json_obj = cJSON_CreateObject();
-#define JSON_DESERIALIZE_ADD_ARRAY_TO_OBJECT(json_obj, key, value) \
+
+// 创建序列化数组（key, value）到json_obj对象中
+#define JSON_SERIALIZE_ADD_ARRAY_TO_OBJECT(json_obj, key, value) \
 	cJSON_AddItemToObject(json_obj, key, value);
-#define JSON_DESERIALIZE_ADD_OBJECT_TO_OBJECT(json_obj, key, value) \
+
+// 创建序列化对象（key, value）到json_obj对象中
+#define JSON_SERIALIZE_ADD_OBJECT_TO_OBJECT(json_obj, key, value) \
 	cJSON_AddItemToObject(json_obj, key, value);
-#define JSON_DESERIALIZE_ADD_STRING_TO_OBJECT(json_obj, key, value) \
+	
+// 增加一个字符串键值对（key, value）到json_obj对象中
+#define JSON_SERIALIZE_ADD_STRING_TO_OBJECT(json_obj, key, value) \
 	cJSON_AddItemToObject(json_obj, key, cJSON_CreateString(value));
-#define JSON_DESERIALIZE_ADD_INT_TO_OBJECT(json_obj, key, value) \
+
+// 增加一个整型键值对（key, value）到json_obj对象中
+#define JSON_SERIALIZE_ADD_INT_TO_OBJECT(json_obj, key, value) \
 	cJSON_AddItemToObject(json_obj, key, cJSON_CreateNumber(value));
-#define JSON_DESERIALIZE_CREATE_ARRAY_START(json_array) \
+
+// 创建一个数组Json对象
+#define JSON_SERIALIZE_CREATE_ARRAY_START(json_array) \
 	cJSON *json_array = cJSON_CreateArray();
-#define JSON_DESERIALIZE_ADD_ARRAY_TO_ARRAY(json_array, sub_json_array) \
+
+// 增加一个数组Json对象（key, value）到json_array对象中
+#define JSON_SERIALIZE_ADD_ARRAY_TO_ARRAY(json_array, sub_json_array) \
 	cJSON_AddItemToArray(json_array, sub_json_array);
-#define JSON_DESERIALIZE_ADD_OBJECT_TO_ARRAY(json_array, json_obj) \
+
+// 增加一Json对象（key, value）到数组对象json_array中
+#define JSON_SERIALIZE_ADD_OBJECT_TO_ARRAY(json_array, json_obj) \
 	cJSON_AddItemToArray(json_array, json_obj);
-#define JSON_DESERIALIZE_CREATE_END(json_obj) \
+
+// 创建Json结束符
+#define JSON_SERIALIZE_CREATE_END(json_obj) \
 	if (json_obj) cJSON_Delete(json_obj);
-#define JSON_DESERIALIZE_STRING(json_doc, str, len) \
+
+// JSON序列化为字符串
+#define JSON_SERIALIZE_STRING(json_doc, str, len) \
 	{ \
 		char *s = cJSON_PrintUnformatted(json_doc); \
 		if (s) { \
@@ -46,7 +65,8 @@ extern "C" {
 		} \
 	}
 
-#define JSON_SERIALIZE_START(json_root, json_string, ret) \
+// 根据json字符串json_string创建json对象json_root
+#define JSON_DESERIALIZE_START(json_root, json_string, ret) \
 	{ \
 		cJSON *json_root = NULL; \
 		do { \
@@ -59,7 +79,8 @@ extern "C" {
 				ret = -2; \
 				break; \
 			}
-#define JSON_SERIALIZE_GET_INT(json_doc, key, value, ret, jump) \
+// 根据json对象json_doc，获取键值为key的整型变量放到value中，返回值放入ret中，jump为程序跳出方式
+#define JSON_DESERIALIZE_GET_INT(json_doc, key, value, ret, jump) \
 	if (NULL == json_doc) { \
 		ret = -1; \
 		printf("%s error\n", key); \
@@ -72,7 +93,9 @@ extern "C" {
 		ret = -3; \
 		JSON_CTRL(jump); \
 	}
-#define JSON_SERIALIZE_GET_DOUBLE(json_doc, key, value, ret, jump) \
+
+// 根据json对象json_doc，获取键值为key的浮点型变量放到value中，返回值放入ret中，jump为程序跳出方式
+#define JSON_DESERIALIZE_GET_DOUBLE(json_doc, key, value, ret, jump) \
 	if (NULL == json_doc) { \
 		ret = -1; \
 		printf("%s error\n", key); \
@@ -85,7 +108,9 @@ extern "C" {
 		ret = -3; \
 		JSON_CTRL(jump); \
 	}
-#define JSON_SERIALIZE_GET_STRING(json_doc, key, value, ret, jump) \
+
+// 根据json对象json_doc，获取键值为key的字符串指针赋值给value，返回值放入ret中，jump为程序跳出方式
+#define JSON_DESERIALIZE_GET_STRING(json_doc, key, value, ret, jump) \
 	if (NULL == json_doc) { \
 		printf("%s error\n", key); \
 		ret = -1; \
@@ -98,7 +123,8 @@ extern "C" {
 		ret = -4; \
 		JSON_CTRL(jump); \
 	}
-#define JSON_SERIALIZE_GET_STRING_COPY(json_doc, key, value, len, ret, jump) \
+// 根据json对象json_doc，获取键值为key的字符串变量放到value中，返回值放入ret中，jump为程序跳出方式
+#define JSON_DESERIALIZE_GET_STRING_COPY(json_doc, key, value, len, ret, jump) \
 	if (NULL == json_doc) { \
 		printf("%s error\n", key); \
 		ret = -1; \
@@ -111,7 +137,9 @@ extern "C" {
 		ret = -5; \
 		JSON_CTRL(jump); \
 	}
-#define JSON_SERIALIZE_GET_ARRAY(json_doc, key, value, ret, jump) \
+
+// 根据json对象json_doc，获取键值为key的Json数组变量放到value中，返回值放入ret中，jump为程序跳出方式
+#define JSON_DESERIALIZE_GET_ARRAY(json_doc, key, value, ret, jump) \
 	cJSON *value = NULL; \
 	if (NULL == json_doc) { \
 		ret = -1; \
@@ -124,14 +152,18 @@ extern "C" {
 		ret = -6; \
 		JSON_CTRL(jump); \
 	}
-#define JSON_SERIALIZE_ARRAY_FOR_EACH_START(json_doc, sub_item, pos, total) \
+
+// 根据json对象json_doc生成sub_item迭代器
+#define JSON_DESERIALIZE_ARRAY_FOR_EACH_START(json_doc, sub_item, pos, total) \
 	int pos, total; \
 	total = cJSON_GetArraySize(json_doc); \
 	for (pos = 0; pos < total; pos++) { \
 		cJSON *sub_item = cJSON_GetArrayItem(json_doc, pos);
-#define JSON_SERIALIZE_ARRAY_FOR_EACH_END() \
+// 数组迭代结束标识
+#define JSON_DESERIALIZE_ARRAY_FOR_EACH_END() \
 	}
-#define JSON_SERIALIZE_GET_OBJECT(json_doc, key, value, ret, jump) \
+// 获取json_doc对象中的Json对象，键值为key，值放到value中，正确ret值为0，否则为负值，jump为失败后的跳转方式
+#define JSON_DESERIALIZE_GET_OBJECT(json_doc, key, value, ret, jump) \
 	cJSON *value = NULL; \
 	if (NULL == json_doc) { \
 		ret = -1; \
@@ -144,7 +176,9 @@ extern "C" {
 		ret = -7; \
 		JSON_CTRL(jump); \
 	}
-#define JSON_SERIALIZE_END(json_root, ret) \
+
+// Json反序列结束标识
+#define JSON_DESERIALIZE_END(json_root, ret) \
 			ret = 0; \
 		} while (0); \
 		if (NULL != json_root) { \

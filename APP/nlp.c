@@ -125,24 +125,24 @@ static cstring_t *getJsonResult(const char *szResponse)
     char *pszText = NULL;
     cstring_new(result);
 
-    JSON_SERIALIZE_START(json_root, szResponse, iRet);
-    JSON_SERIALIZE_GET_INT(json_root, "code", iCode, iRet, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_GET_STRING(json_root, "desc", pszDesc, iRet, JSON_CTRL_NULL);
-    JSON_SERIALIZE_GET_ARRAY(json_root, "data", json_array, iRet, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_ARRAY_FOR_EACH_START(json_array, sub_item, pos, total);
-    JSON_SERIALIZE_GET_OBJECT(sub_item, "intent", intent_obj, iRet, JSON_CTRL_CONTINUE);
-    JSON_SERIALIZE_GET_STRING(intent_obj, "text", pszText, iRet, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_START(json_root, szResponse, iRet);
+    JSON_DESERIALIZE_GET_INT(json_root, "code", iCode, iRet, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_STRING(json_root, "desc", pszDesc, iRet, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_GET_ARRAY(json_root, "data", json_array, iRet, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_START(json_array, sub_item, pos, total);
+    JSON_DESERIALIZE_GET_OBJECT(sub_item, "intent", intent_obj, iRet, JSON_CTRL_CONTINUE);
+    JSON_DESERIALIZE_GET_STRING(intent_obj, "text", pszText, iRet, JSON_CTRL_NULL);
     LOG(ETRACE, "识别内容：%s", pszText);
-    JSON_SERIALIZE_GET_ARRAY(intent_obj, "voice_answer", sub_voice_item, iRet, JSON_CTRL_CONTINUE);
-    JSON_SERIALIZE_ARRAY_FOR_EACH_START(sub_voice_item, voice_item, voice_pos, voice_total);
-    JSON_SERIALIZE_GET_STRING(voice_item, "content", pszText, iRet, JSON_CTRL_CONTINUE);
+    JSON_DESERIALIZE_GET_ARRAY(intent_obj, "voice_answer", sub_voice_item, iRet, JSON_CTRL_CONTINUE);
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_START(sub_voice_item, voice_item, voice_pos, voice_total);
+    JSON_DESERIALIZE_GET_STRING(voice_item, "content", pszText, iRet, JSON_CTRL_CONTINUE);
     if (pszText)
     {
         result->appendStr(result, pszText, strlen(pszText));
     }
-    JSON_SERIALIZE_ARRAY_FOR_EACH_END();
-    JSON_SERIALIZE_ARRAY_FOR_EACH_END();
-    JSON_SERIALIZE_END(json_root, iRet);
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_END();
+    JSON_DESERIALIZE_ARRAY_FOR_EACH_END();
+    JSON_DESERIALIZE_END(json_root, iRet);
 
     if (0 == result->length(result))
     {

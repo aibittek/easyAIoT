@@ -320,40 +320,6 @@ void vAudioClose()
 
 #endif
 
-/* for test */
-static void RecordCB(void* pvHandle, int32_t iType, void* pvUserData, void* pvData, int32_t iLen)
-{
-    uint32_t bytesWritten = 0;
-    static uint32_t totalWriten = 0;
-    const char *pathname = (const char *)pvUserData;
-    static FILE* fp = NULL;
-    if (!fp) {
-        fp = fopen(pathname, "wb+");
-    }
-    if (AUDIO_DATA == iType) {
-        if (fp) {
-            bytesWritten = fwrite(pvData, iLen, 1, fp);
-            totalWriten += bytesWritten*iLen;
-            LOG(EDEBUG, "totalWriten:%d, iLen:%d", totalWriten, iLen);
-            if (totalWriten > 32000*5) {
-                Recorder.stop();
-            }
-        }
-    }
-    else if (AUDIO_CLOSE == iType) {
-        if (fp) fclose(fp);
-        fp = NULL;
-        Recorder.stop();
-    }
-}
-void vAudioRecordTest()
-{
-    AudioConfig_t stAudioConfig = {16000, 16, 1, RecordCB, (void*)"test.pcm"};
-    Recorder.open(&stAudioConfig);
-    Recorder.start();
-    Recorder.close();
-}
-
 #ifdef __cplusplus
 }
 #endif

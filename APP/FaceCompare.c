@@ -75,12 +75,12 @@ static double fGetScoreResult(const char *szResponse)
 
     cstring_new(text);
     
-    JSON_SERIALIZE_START(json_root, szResponse, iRet);
-        JSON_SERIALIZE_GET_OBJECT(json_root, "payload", payload_obj, iRet, JSON_CTRL_BREAK);
-        JSON_SERIALIZE_GET_OBJECT(payload_obj, "face_compare_result", result_obj, iRet, JSON_CTRL_BREAK);
-        JSON_SERIALIZE_GET_STRING(result_obj, "text", pText, iRet, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_START(json_root, szResponse, iRet);
+        JSON_DESERIALIZE_GET_OBJECT(json_root, "payload", payload_obj, iRet, JSON_CTRL_BREAK);
+        JSON_DESERIALIZE_GET_OBJECT(payload_obj, "face_compare_result", result_obj, iRet, JSON_CTRL_BREAK);
+        JSON_DESERIALIZE_GET_STRING(result_obj, "text", pText, iRet, JSON_CTRL_NULL);
         if (pText) text->appendStr(text, pText, strlen(pText));
-    JSON_SERIALIZE_END(json_root, iRet);
+    JSON_DESERIALIZE_END(json_root, iRet);
 
     if (text->length(text)) {
         cstring_new_len(textDecode, strlen(text->str));
@@ -88,10 +88,10 @@ static double fGetScoreResult(const char *szResponse)
 
         cstring_new(score);
         LOG(EDEBUG, "score json:%s", textDecode->str);
-        JSON_SERIALIZE_START(json_root, textDecode->str, iRet);
-        JSON_SERIALIZE_GET_INT(json_root, "ret", iRetStauts, iRet, JSON_CTRL_NULL);
-        JSON_SERIALIZE_GET_DOUBLE(json_root, "score", fScore, iRet, JSON_CTRL_NULL);
-        JSON_SERIALIZE_END(json_root, iRet);
+        JSON_DESERIALIZE_START(json_root, textDecode->str, iRet);
+        JSON_DESERIALIZE_GET_INT(json_root, "ret", iRetStauts, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_DOUBLE(json_root, "score", fScore, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_END(json_root, iRet);
         cstring_del(score);
 
         cstring_del(textDecode);

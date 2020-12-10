@@ -41,10 +41,3 @@ bool szDateformat(const char *fmt, char *pDate, int iLen)
             szTime[4], szTime[3]);
     return true;
 }
-
-void testDate()
-{
-    char szDate[64];
-    datetime.now();
-    datetime.format("GMT", szDate, sizeof(szDate));
-}

@@ -23,6 +23,12 @@ struct ThreadFun{
 	void* (*fun)(void *params);   //线程函数指针 
 #endif
 };
+
+/**
+ * @brief 线程创建
+ * @param  iThreadNum       线程创建的个数
+ * @param  funArray         线程处理函数组
+ */
 void vStartThread(int iThreadNum, ThreadFun funArray[]);
 
 #endif

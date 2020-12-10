@@ -85,7 +85,8 @@ void urldecode(char in[], char out[])
         char c = in[i];
         if (c != '%')
         {
-            out[res_len++] = c;
+            if (c == '+') out[res_len++] = ' ';
+            else out[res_len++] = c;
         }
         else
         {

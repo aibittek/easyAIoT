@@ -145,30 +145,15 @@ void vMD5(const unsigned char *initial_msg, unsigned int initial_len, unsigned c
     to_bytes(h2, digest + 8);
     to_bytes(h3, digest + 12);
 }
- 
-int md5_test(int argc, char **argv) {
-    char *msg;
-    size_t len;
+
+void md5String(const unsigned char *msg, unsigned int len, unsigned char *digest)
+{
     int i;
-    uint8_t result[16];
- 
-    if (argc < 2) {
-        printf("usage: %s 'string'\n", argv[0]);
-        return 1;
-    }
-    msg = argv[1];
- 
-    len = strlen(msg);
- 
-    // benchmark
-    for (i = 0; i < 1000000; i++) {
-        vMD5((uint8_t*)msg, len, result);
-    }
- 
-    // display result
+    unsigned char sBuf[16];
+    vMD5((uint8_t *)msg, len, sBuf);
     for (i = 0; i < 16; i++)
-        printf("%2.2x", result[i]);
-    puts("");
- 
-    return 0;
+    {
+        sprintf(digest + i * 2, "%2.2x", sBuf[i]);
+    }
+    digest[i*2] = '\0';
 }

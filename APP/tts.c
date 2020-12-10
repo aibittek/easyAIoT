@@ -21,12 +21,12 @@ static int iWriteData(const char *pszData, size_t dwLen, const char *pathname)
     char *pszAudioItem;
     char *pszAudio = NULL;
     int iStatus = 0;
-    JSON_SERIALIZE_START(json_root, pszData, iRet);
-    JSON_SERIALIZE_GET_INT(json_root, "code", iCode, iRet, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_GET_STRING(json_root, "desc", szDesc, iRet, JSON_CTRL_NULL);
-    JSON_SERIALIZE_GET_OBJECT(json_root, "data", json_data, iRet, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_GET_INT(json_data, "status", iStatus, iRet, JSON_CTRL_BREAK);
-    JSON_SERIALIZE_GET_STRING(json_data, "audio", pszAudioItem, iRet, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_START(json_root, pszData, iRet);
+    JSON_DESERIALIZE_GET_INT(json_root, "code", iCode, iRet, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_STRING(json_root, "desc", szDesc, iRet, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_GET_OBJECT(json_root, "data", json_data, iRet, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_INT(json_data, "status", iStatus, iRet, JSON_CTRL_BREAK);
+    JSON_DESERIALIZE_GET_STRING(json_data, "audio", pszAudioItem, iRet, JSON_CTRL_BREAK);
     if (pszAudioItem)
     {
         // decode64 audio，追加写入文件
@@ -42,7 +42,7 @@ static int iWriteData(const char *pszData, size_t dwLen, const char *pathname)
         if (pszAudio)
             free(pszAudio);
     }
-    JSON_SERIALIZE_END(json_root, iRet);
+    JSON_DESERIALIZE_END(json_root, iRet);
 
     return iStatus;
 }

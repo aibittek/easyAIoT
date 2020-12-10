@@ -5,25 +5,25 @@
 
 typedef struct cstring
 {
-    char *str;
-    size_t alloced;
-    size_t len;
+    char *str;                                                              // 字符串
+    size_t alloced;                                                         // 动态分配
+    size_t len;                                                             // 字符长度
 
-    struct cstring *(*create)(size_t len);
-    void (*destory)(struct cstring *);
-    void (*appendStr)(struct cstring *cs, const char *str, size_t len);
-    void (*appendChar)(struct cstring *cs, char c);
-    void (*appendInt)(struct cstring *cs, int val);
-    void (*frontStr)(struct cstring *cs, const char *str, size_t len);
-    void (*frontChar)(struct cstring *cs, char c);
-    void (*frontInt)(struct cstring *cs, int val);
-    void (*clear)(struct cstring *cs);
-    void (*truncate)(struct cstring *cs, size_t len);
-    void (*dropBegin)(struct cstring *cs, size_t len);
-    void (*dropEnd)(struct cstring *cs, size_t len);
-    size_t (*length)(const struct cstring *cs);
-    const char *(*peek)(const struct cstring *cs);
-    char *(*dump)(const struct cstring *cs, size_t *len);
+    struct cstring *(*create)(size_t len);                                  // 创建字符串
+    void (*destory)(struct cstring *);                                      // 释放字符串
+    void (*appendStr)(struct cstring *cs, const char *str, size_t len);     // 追加字符串
+    void (*appendChar)(struct cstring *cs, char c);                         // 追加字符
+    void (*appendInt)(struct cstring *cs, int val);                         // 追加整型
+    void (*frontStr)(struct cstring *cs, const char *str, size_t len);      // 从头插入字符串
+    void (*frontChar)(struct cstring *cs, char c);                          // 从头插入字符
+    void (*frontInt)(struct cstring *cs, int val);                          // 从头插入整型
+    void (*clear)(struct cstring *cs);                                      // 清空字符串内容
+    void (*truncate)(struct cstring *cs, size_t len);                       // 截断字符串
+    void (*dropBegin)(struct cstring *cs, size_t len);                      // 丢掉前面指定len的字符
+    void (*dropEnd)(struct cstring *cs, size_t len);                        // 丢掉后面指定len的字符
+    size_t (*length)(const struct cstring *cs);                             // 求取字符串长度
+    const char *(*peek)(const struct cstring *cs);                          // 获取字符串首地址
+    char *(*dump)(const struct cstring *cs, size_t *len);                   // 获取字符串内容
 } cstring_t;
 
 cstring_t *cstring_create(size_t len);

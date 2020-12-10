@@ -34,3 +34,14 @@ void hmac_sha256(const unsigned char *data, size_t len, const unsigned char *key
     memcpy(hash_buf + key_size, hash_out, hash_size);
     mbedtls_sha256(hash_buf, key_size + hash_size, out, 0);
 }
+
+void hamcSha256String(const unsigned char *data, size_t len, const unsigned char *key, int len_key, unsigned char *out)
+{
+    unsigned char hamc_out[32] = {0};
+
+    hmac_sha256(data, len, key, len_key, hamc_out);
+    for (int i = 0; i < 32; i++)
+    {
+        sprintf(out + i * 2, "%2.2x", hamc_out[i]);
+    }
+}

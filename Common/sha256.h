@@ -134,6 +134,14 @@ void mbedtls_sha256( const unsigned char *input, size_t ilen,
  */
 int mbedtls_sha256_self_test( int verbose );
 
+/**
+ * @brief sha256加密
+ * @param  input            加密源字符串
+ * @param  ilen             加密源字符串大小
+ * @param  out              加密字符串，大于等于65字节
+ */
+void sha256(const unsigned char *input, size_t ilen, unsigned char *out);
+
 #ifdef __cplusplus
 }
 #endif
