@@ -1,6 +1,7 @@
 #ifndef __TTS_H
 #define __TTS_H
 
+#include <stdbool.h>
 #include <cstring.h>
 
 /**

@@ -66,7 +66,7 @@ cstring_t *pstGenBody(const char *pszAPPID, const char *pszImagePath1, const cha
     return cs;
 }
 
-static double fGetScoreResult(const char *szResponse)
+double fGetScoreResult(const char *szResponse)
 {
     double fScore = 0.0f;
     int iRet, iRetStauts = 0;
