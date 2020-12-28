@@ -6,13 +6,14 @@
 #include <cJSON_user_define.h>
 #include <base64.h>
 #include <urlencode.h>
-#include "BankCard.h"
+#include <file.h>
+#include "IDCard.h"
 
 static cstring_t *getHeader(const char *appid, const char *apikey)
 {
     unsigned char psMD5[16] = {0};
     unsigned char pszMD5Dist[33] = {0};
-    const char *pszParam = "{\"engine_type\": \"bankcard\", \"card_number_image\": \"0\"}";
+    const char *pszParam = "{\"engine_type\":\"idcard\",\"head_portrait\":\"0\",\"crop_image\":\"0\"}";
 
     // 需要的额外头文件
     const char pszAIUIHeader[] = {
@@ -55,7 +56,7 @@ static cstring_t *getHeader(const char *appid, const char *apikey)
 static cstring_t *getBody(const char *pathname)
 {
     cstring_t *body = readFile(pathname);
-
+    if (!body) return NULL;
     cstring_new_len(base64Body, body->len*2);
     iBase64Encode(body->str, base64Body->str, body->len);
     base64Body->len = strlen(base64Body->str);
@@ -76,17 +77,43 @@ static cstring_t *getBody(const char *pathname)
     return finalBody;
 }
 
-void BandCardRecognition(const char *appid, const char *apikey, const char *image,
-                         char *result, int reslen)
+static bool getJSONResult(const char *szResponse, IDCard_t *pIDCard)
+{
+    int code, iRet;
+
+    JSON_DESERIALIZE_START(json_root, szResponse, iRet);
+        JSON_DESERIALIZE_GET_INT(json_root, "code", code, iRet, JSON_CTRL_BREAK);
+        JSON_DESERIALIZE_GET_OBJECT(json_root, "data", data_obj, iRet, JSON_CTRL_BREAK);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "address", pIDCard->address, sizeof(pIDCard->address), iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "birthday", pIDCard->birthday, sizeof(pIDCard->birthday), iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_INT(data_obj, "border_covered", pIDCard->border_covered, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_INT(data_obj, "complete", pIDCard->complete, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_INT(data_obj, "error_code", pIDCard->error_code, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "error_msg", pIDCard->error_msg, sizeof(pIDCard->error_msg), iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_INT(data_obj, "gray_image", pIDCard->gray_image, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_INT(data_obj, "head_blurred", pIDCard->head_blurred, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_INT(data_obj, "head_covered", pIDCard->head_covered, iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "id_number", pIDCard->id_number, sizeof(pIDCard->id_number), iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "name", pIDCard->name, sizeof(pIDCard->name), iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "people", pIDCard->people, sizeof(pIDCard->people), iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "sex", pIDCard->sex, sizeof(pIDCard->sex), iRet, JSON_CTRL_NULL);
+        JSON_DESERIALIZE_GET_STRING_COPY(data_obj, "type", pIDCard->type, sizeof(pIDCard->type), iRet, JSON_CTRL_NULL);
+    JSON_DESERIALIZE_END(json_root, iRet);
+}
+
+bool getIDCard(const char *appid, const char *apisecret, const char *appkey,
+        const char *image, IDCard_t *pIDCard)
 {
     bool bRet = false;
     SEIHttpInfo_t stHttpInfo;
     cstring_t *header = NULL, *body = NULL;
-    char *szBaseUrl = "http://webapi.xfyun.cn/v1/service/v1/ocr/bankcard";
+    char *szBaseUrl = "http://webapi.xfyun.cn/v1/service/v1/ocr/idcard";
+
+    cstring_new(result);
 
     do {
         // 构造header
-        cstring_t *header = getHeader(appid, apikey);
+        cstring_t *header = getHeader(appid, appkey);
         if (!header) break;
 
         // 构造请求body
@@ -97,14 +124,17 @@ void BandCardRecognition(const char *appid, const char *apikey, const char *imag
         bRet = bConnectHttpServer(&stHttpInfo, szBaseUrl, header->str,
                         body->str, body->len);
         if (!bRet) break;
-
-        LOG(EDEBUG, "card info:%s", stHttpInfo.stResponse.pstBody->sBuffer);
-        snprintf(result, reslen, "%s", stHttpInfo.stResponse.pstBody->sBuffer);
     } while(0);
+
+    if (stHttpInfo.stResponse.pstBody->sBuffer) {
+        bRet = getJSONResult(stHttpInfo.stResponse.pstBody->sBuffer, pIDCard);
+    }
 
     // 关闭HTTP
     bHttpClose(&stHttpInfo);
 
     cstring_del(header);
     cstring_del(body);
+
+    return bRet;
 }
