@@ -109,8 +109,6 @@ bool getIDCard(const char *appid, const char *apisecret, const char *appkey,
     cstring_t *header = NULL, *body = NULL;
     char *szBaseUrl = "http://webapi.xfyun.cn/v1/service/v1/ocr/idcard";
 
-    cstring_new(result);
-
     do {
         // 构造header
         cstring_t *header = getHeader(appid, appkey);
@@ -123,10 +121,9 @@ bool getIDCard(const char *appid, const char *apisecret, const char *appkey,
         LOG(EDEBUG, "header:%s,bodylen:%d", header->str, body->length(body));
         bRet = bConnectHttpServer(&stHttpInfo, szBaseUrl, header->str,
                         body->str, body->len);
-        if (!bRet) break;
     } while(0);
 
-    if (stHttpInfo.stResponse.pstBody->sBuffer) {
+    if (bRet && stHttpInfo.stResponse.pstBody->sBuffer) {
         bRet = getJSONResult(stHttpInfo.stResponse.pstBody->sBuffer, pIDCard);
     }
 
