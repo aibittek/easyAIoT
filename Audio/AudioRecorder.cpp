@@ -87,6 +87,10 @@ static DWORD CALLBACK RecordCallbackProc(HWAVEIN hwavein, UINT uMsg, DWORD dwIns
                 ;
         }
 #endif
+        if (!Recorder.bRecording) {
+            waveInReset((HWAVEIN)Recorder.pvAudioHandle);   //停止录音
+            break;
+        }
         if (Recorder.stAudioConfig.pfCallback)
         {
             Recorder.stAudioConfig.pfCallback(Recorder.pvAudioHandle, AUDIO_DATA, Recorder.stAudioConfig.pvUserData,
@@ -180,9 +184,9 @@ bool bAudioStart()
 {
     if (Recorder.pvAudioHandle)
     {
+        Recorder.bRecording = true;
         MMRESULT mmResult = waveInStart((HWAVEIN)Recorder.pvAudioHandle);
         WaitForSingleObject(pvEventHandle, INFINITE);
-        Recorder.bRecording = true;
         return (MMSYSERR_NOERROR == mmResult);
     }
     return false;
@@ -202,7 +206,8 @@ void vAudioClose()
     {
         CloseHandle(pvEventHandle);
         pvEventHandle = NULL;
-        waveInClose((HWAVEIN)Recorder.pvAudioHandle);
+        
+        waveInClose((HWAVEIN)Recorder.pvAudioHandle);   
         Recorder.pvAudioHandle = NULL;
     }
 }

@@ -27,12 +27,13 @@ uint8_t ucSimpleVad(const int16_t *psVocBuf, const uint32_t ulBufLen)
 		}
 	}
     //------------------------------------------------------------------------------
+	// fprintf(stderr, "en:%d,zero:%d\n", ulvEnergy, ulvZerorate);
 	if (ulvEnergy>50000 && ulvZerorate>10)//这一帧数据达到语音帧的标准
 	{
 		usVocSta = 1;		//置状态机位语音态
 		usScnt = 0;			//静音帧数量统计清零
 	}
-	else if (ulvEnergy<10000 || ulvZerorate<1)//这一帧数据没达到语音帧的标准
+	else if (ulvEnergy<20000 || ulvZerorate<=1)//这一帧数据没达到语音帧的标准
 	{
 		//如果状态机还在语音态且静音帧的数量在60帧以内
 		if (usScnt < 60 && usVocSta == 1)	//18*60ms

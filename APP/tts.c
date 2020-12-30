@@ -8,6 +8,8 @@
 
 #include "tts.h"
 
+#define TTS_PARAM "{\"common\":{\"app_id\":\"%s\"},\"business\":{\"aue\":\"raw\",\"auf\":\"audio/L16;rate=16000\",\"vcn\":\"aisbabyxu\",\"tte\":\"utf8\",\"ent\":\"aisound\"},\"data\":{\"status\":2,\"text\":\"%s\"}}"
+
 typedef struct ttsPriData {
     char *pText;
     char *pPath;
@@ -58,7 +60,7 @@ static bool bWSCallback(SSockClient_t *pstSock, void *pvData, EEIWS_MESSAGE eTyp
         char szText[1024] = {0};
         char szData[4096] = {0};
         iBase64Encode(pszOrigin->pText, szText, strlen(pszOrigin->pText));
-        sprintf(szData, "{\"common\":{\"app_id\":\"%s\"},\"business\":{\"aue\":\"raw\",\"auf\":\"audio/L16;rate=16000\",\"vcn\":\"xiaoyan\",\"tte\":\"utf8\",\"ent\":\"aisound\"},\"data\":{\"status\":2,\"text\":\"%s\"}}", appconfig.appid, szText);
+        sprintf(szData, TTS_PARAM, appconfig.appid, szText);
         iWSSend(pstSock, szData, strlen(szData), EEIWS_OPCODE_TXTDATA);
         break;
     case EEIWS_ON_MESSAGE: // 收到websocket消息

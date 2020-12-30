@@ -2,6 +2,7 @@
 #include <tts.h>
 #include <EILog.h>
 #include <IDCard.h>
+#include <SmartSpeaker.h>
 
 int main(int argc, char *argv[])
 {
@@ -16,15 +17,18 @@ int main(int argc, char *argv[])
     // LOG(EDEBUG, "%s\n", bankInfo);
 
     // 身份证识别
-    IDCard_t idcard;
-    getIDCard(appid, appsecret, apikey, "../Res/idcard.jpg", &idcard);
-    LOG(EDEBUG, "address:%s", idcard.address);
-    LOG(EDEBUG, "birthday:%s", idcard.birthday);
-    LOG(EDEBUG, "id_number:%s", idcard.id_number);
-    LOG(EDEBUG, "name:%s", idcard.name);
-    LOG(EDEBUG, "people:%s", idcard.people);
-    LOG(EDEBUG, "sex:%s", idcard.sex);
-    LOG(EDEBUG, "type:%s", idcard.type);
+    // IDCard_t idcard;
+    // getIDCard(appid, appsecret, apikey, "../Res/idcard.jpg", &idcard);
+    // LOG(EDEBUG, "address:%s", idcard.address);
+    // LOG(EDEBUG, "birthday:%s", idcard.birthday);
+    // LOG(EDEBUG, "id_number:%s", idcard.id_number);
+    // LOG(EDEBUG, "name:%s", idcard.name);
+    // LOG(EDEBUG, "people:%s", idcard.people);
+    // LOG(EDEBUG, "sex:%s", idcard.sex);
+    // LOG(EDEBUG, "type:%s", idcard.type);
+
+    // 测试智能音箱功能
+    testSmartSpeaker();
 
     // getTTS(appid, apikey, appsecret, "一件20块，两件30块，多买一件少5块", pathname);
 
