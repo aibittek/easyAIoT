@@ -39,18 +39,18 @@ bool bHttpUrlParse(const char *pszUrl, EIString** pstHost, EIString** pstPath, u
             nPort = 80;
         }
         pszHost = strdup(pszStart);
+        *pstHost = stEIStringCopy(pszHost);
+        cstring_new_len(str, strlen(pszPathDup)*2);
+        urlencode(pszPathDup, str->str);
+        *pstPath = stEIStringCopy(str->str);
+        cstring_del(str);
+        *pnPort = nPort;
+
         nRet = true;
     } while(0);
 
     // LOG(EDEBUG, "%s,%d,%s\n", pszHost, nPort, pszPathDup);
 
-    *pstHost = stEIStringCopy(pszHost);
-
-    cstring_new_len(str, strlen(pszPathDup)*2);
-    urlencode(pszPathDup, str->str);
-    *pstPath = stEIStringCopy(str->str);
-    cstring_del(str);
-    *pnPort = nPort;
     if (pszUrlDup) free(pszUrlDup);
     if (pszHost) free(pszHost);
     if (pszPathDup) free(pszPathDup);

@@ -183,7 +183,6 @@ cstring_t *getAIUIResult(const char *appid, const char *apikey, const char *para
 #include <Windows.h>
 #include <stdio.h>
 #pragma comment(lib, "winmm.lib")
-#endif
 void pcmPlay(const char *pathname)
 {
     const int buf_size = 1024 * 1024 * 30;
@@ -224,7 +223,22 @@ void pcmPlay(const char *pathname)
     }
     waveOutClose(hwo);
     CloseHandle(wait);
+    cstring_del(pFile);
 }
+#elif defined(LINUX)
+void pcmPlay(const char *pathname)
+{
+    const char *format = "aplay -r16000 -c1 -f S16_LE %s";
+    int len = strlen(format) + strlen(pathname);
+    char *cmd = (char *)malloc(len);
+    if (!cmd) return;
+    sprintf(cmd, format, pathname);
+    system(cmd);
+    if (cmd) free(cmd);
+}
+#else
+#error "pcm play not support on this platform."
+#endif
 
 void testSmartSpeaker()
 {
