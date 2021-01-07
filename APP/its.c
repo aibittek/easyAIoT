@@ -148,33 +148,94 @@ static cstring_t *getJsonResult(const char *szResponse)
     return result;
 }
 
-cstring_t *getITSResult(const char *pszAppid, const char *pszKey, const char *pszSecret, const char *pData)
+static cstring_t *getBody(const char *appid, const char *data, int len)
 {
-    if (!pszAppid || !pszKey || !pszSecret || !pData)
+    cstring_t *body = NULL;
+    const char *param = "{\"common\":{\"app_id\":\"%s\"},\"business\":{\"from\":\"cn\",\"to\":\"en\"},\"data\":{\"text\":\"%s\"}}";
+    
+    // 对内容base64加密
+    cstring_new_len(base64data, len*1.5);
+    if (!base64data) return NULL;
+    iBase64Encode(data, base64data->str, len);
+    base64data->len = strlen(base64data->str);
+
+    // 生成body的内容
+    int size = strlen(param) + strlen(appid) + base64data->len;
+    cstring_new_len(bodyParam, size);
+    sprintf(bodyParam->str, param, appid, base64data->str);
+    bodyParam->len = strlen(bodyParam->str);
+    body = bodyParam;
+
+    cstring_del(base64data);
+
+    return body;
+}
+
+
+static cstring_t *getHeader(const char *appid, const char *appkey, const char *appsecret, cstring_t *body)
+{
+    char szDate[64];
+    char Digest[64] = {0};
+    unsigned char Sha256Digest[65] = {0};
+    char szAuth[1024] = {0};
+
+    // AIUI需要的额外头文件
+    const char header[] = {
+        "Date: %s\r\n"
+        "Digest: SHA-256=%s\r\n"
+        "Authorization: %s\r\n"
+        "Content-Type: application/json\r\n"
+        "Accept: application/json,version=1.0\r\n"};
+
+    // 获取系统当前NTP时间
+    datetime.format("GMT", szDate, sizeof(szDate));
+
+    // 获取参数
+    mbedtls_sha256(body->str, body->len, Sha256Digest, 0);
+    iBase64Encode(Sha256Digest, Digest, 32);
+
+    // 获取Auth字段
+    vGetAuth2(appkey, appsecret, "itrans.xfyun.cn", "POST /v2/its HTTP/1.1", 
+        "host date request-line digest", "hmac-sha256", szDate, Digest, szAuth, sizeof(szAuth));
+
+    // 构造Header
+    int size = strlen(header) + strlen(appid) + sizeof(szDate) +
+           strlen(szAuth) + sizeof(Digest);
+
+    cstring_new_len(strHeader, size);
+    snprintf(strHeader->str, size, header, szDate, Digest, szAuth);
+    strHeader->len = strlen(strHeader->str);
+
+    return strHeader;
+}
+
+bool getITSResult(const char *appid, const char *apikey, const char *apisecret, 
+    const char *src, const char *dst, const char *data)
+{
+    if (!appid || !apikey || !apisecret || !src || !dst || !data)
     {
-        return NULL;
+        return false;
     }
-    char pszUrl[1024] = "http://itrans.xfyun.cn/v2/its";
 
-    // 获取body数据
-    cstring_new_len(body, strlen(pData)*2);
-    iBase64Encode(pData, strlen(pData), body->str);
-    body->len = strlen(body->str);
+    const char *url = "http://itrans.xfyun.cn/v2/its";
+    // 获取http请求body数据
+    cstring_t *body = getBody(appid, data, strlen(data));
 
-    // 生成头文件
-    cstring_t *pHeader = getITSHeader(pszAppid, pszKey, pszSecret, body);
+    // 获取http请求header数据
+    cstring_t *header = getHeader(appid, apikey, apisecret, body);
 
-    // 发送HTTP Post语音识别的请求
+    // 发起HTTP Post语音识别的请求
     SEIHttpInfo_t stHttpInfo;
-    bConnectHttpServer(&stHttpInfo, pszUrl, pHeader->str, body->str, body->len);
+    bConnectHttpServer(&stHttpInfo, url, header->str, body->str, body->len);
     LOG(EDEBUG, "status:%d", stHttpInfo.stResponse.iStatus);
-    LOG(EDEBUG, "result:%s", stHttpInfo.stResponse.pstBody->sBuffer);
+    LOG(EDEBUG, "body:%s", stHttpInfo.stResponse.pstBody->sBuffer);
 
-    // 关闭HTTP
+    // 获取结果信息
+    // parseResult(header->str);
+
+    cstring_del(header);
+    cstring_del(body);
     bHttpClose(&stHttpInfo);
 
-    // 释放资源
-    cstring_del(pHeader);
-
-    return NULL;
+    return true;
 }

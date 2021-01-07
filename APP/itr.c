@@ -114,6 +114,7 @@ bool getITRResult(const char *appid, const char *appkey, const char *appsecret, 
 
     cstring_del(header);
     cstring_del(body);
+    bHttpClose(&stHttpInfo);
 
     return true;
 }
