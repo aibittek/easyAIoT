@@ -212,7 +212,7 @@ static bool bWSCallback(SSockClient_t *pstSock, void* pUserData, EEIWS_MESSAGE e
         LOG(EDEBUG, "websocket close");
         break;
     case EEIWS_ON_ERROR: // websocket错误信息
-        LOG(EDEBUG, "websocket error");
+        LOG(EDEBUG, "websocket error, errordetail:%s", pvMessage);
         break;
     default:
         break;
@@ -234,11 +234,11 @@ void igr(const char *appid, const char *key, const char *secret)
     datetime.format("GMT", szDate, sizeof(szDate));
     vGetAuth(key, secret, "ws-api.xfyun.cn",
              "GET /v2/igr HTTP/1.1", szDate, szAuth, sizeof(szAuth));
-    LOG(ETRACE, "auth:%s\n", szAuth);
+    LOG(EDEBUG, "auth:%s\n", szAuth);
 
     // 2. 构造完整的URL
     snprintf(szFullUrl, sizeof(szFullUrl), szBaseUrl, "ws-api.xfyun.cn", szDate, szAuth);
-    LOG(ETRACE, "url:%s", szFullUrl);
+    LOG(EDEBUG, "url:%s", szFullUrl);
 
     // 3. 连接服务器
     bWebsocketConnect(szFullUrl, bWSCallback, NULL);

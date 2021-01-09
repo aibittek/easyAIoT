@@ -408,7 +408,9 @@ static bool bDefaultWSCallback(struct SSockClient *pstClient, void *pvUserData, 
                     pstHttpParser->iLength += iLen;
                     pstHttpParser->iCurLen = 0;
                 } else {
-                    pstHttpParser->bBodyEnd = true;
+                    pstHttpParser->bBodyEnd = true;         
+                    bRet = pstHttpParser->fwsCallback(pstSockClient, pstHttpParser->pvCBUserData, EEIWS_ON_ERROR, 
+                           pstResponse->pstBody->sBuffer, pstResponse->pstBody->lSize);
                     continue;
                 }
             } else {

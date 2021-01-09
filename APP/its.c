@@ -1,61 +1,17 @@
 #include <stdint.h>
 #include <stdio.h>
-#include "ntp.h"
-#include "EILog.h"
-#include "its.h"
-#include "EIHttpClient.h"
-#include "base64.h"
-#include "md5.h"
-#if defined(UNIX)
-#include "tinycap.h"
-#endif
-#include "vad.h"
+#include <EILog.h>
+#include <EIHttpClient.h>
+#include <base64.h>
+#include <md5.h>
+#include <sha256.h>
+#include <vad.h>
 #include <cstring.h>
 #include <date.h>
 #include <file.h>
-#include "cJSON_user_define.h"
+#include <cJSON_user_define.h>
 
-static cstring_t *getITSHeader(const char *pszAppid, const char *pszKey, const char *pszSecret, cstring_t *body)
-{
-    char szDate[64];
-    char Digest[128] = {0};
-    char Sha256Digest[64] = {0};
-    char szAuth[1024] = {0};
-    unsigned char psMD5[16] = {0};
-    unsigned char pszMD5Dist[33] = {0};
-
-    // AIUI需要的额外头文件
-    const char pszAIUIHeader[] = {
-        "Date: %s\r\n"
-        "Digest: SHA-256=%s\r\n"
-        "Authorization: %s\r\n"
-        "Content-Type:application/json\r\n"
-        "Accept:application/json,version=1.0\r\n"};
-
-    // 获取系统当前NTP时间
-    datetime.format("GMT", szDate, sizeof(szDate));
-
-    // 获取参数
-    cstring_new_len(base64digest, strlen(body->str) * 2);
-    sha256(body->str, body->len, Sha256Digest);
-    iBase64Encode(Sha256Digest, Digest, 64);
-
-    // 获取Auth字段
-    vGetAuth(pszKey, pszSecret, "itrans.xfyun.cn",
-             "GET /v2/its HTTP/1.1", szDate, szAuth, sizeof(szAuth));
-
-    // 构造Header
-    int size = strlen(pszAIUIHeader) + strlen(pszAppid) + sizeof(szDate) +
-           strlen(szAuth) + sizeof(Digest);
-
-    cstring_new_len(strHeader, size);
-    snprintf(strHeader->str, size, pszAIUIHeader, pszAppid, szDate, szAuth, strlen(szAuth));
-    strHeader->len = strlen(strHeader->str);
-
-    cstring_del(base64digest);
-
-    return strHeader;
-}
+#include "its.h"
 
 #if 0
 // 获取实时录音数据
@@ -170,7 +126,6 @@ static cstring_t *getBody(const char *appid, const char *data, int len)
 
     return body;
 }
-
 
 static cstring_t *getHeader(const char *appid, const char *appkey, const char *appsecret, cstring_t *body)
 {

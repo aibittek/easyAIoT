@@ -37,7 +37,7 @@ bool szDateformat(const char *fmt, char *pDate, int iLen)
 
     // 把时间转化为字符串格式
     sscanf(ctime(&dwTime), "%s %s %d %s %s", szTime[0], szTime[1], &iMon, szTime[3], szTime[4]);
-    snprintf(pDate, iLen, "%s, %02d %s %s %s GMT", szTime[0], iMon, szTime[1],
+    snprintf(pDate, iLen, "%s, %02d %s %s %s UTC", szTime[0], iMon, szTime[1],
             szTime[4], szTime[3]);
     return true;
 }
