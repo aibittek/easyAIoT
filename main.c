@@ -1,4 +1,8 @@
-#include <igr.h>
+#include "FaceCompare.h"
+#include "EILog.h"
+#include "igr.h"
+#include "tts.h"
+#include "AudioPlayer.h"
 
 int main(int argc, char *argv[])
 {
