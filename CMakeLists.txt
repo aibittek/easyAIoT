@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(EasyAIoT VERSION 0.1.0)
 
-set(CMAKE_C_FLAGS "")
+set(CMAKE_C_FLAGS "-std=gnu99")
 set(CMAKE_CXX_FLAGS "-fpermissive -D_DEBUG")
+SET(CMAKE_SYSTEM_NAME Linux)
+SET(CMAKE_C_COMPILER "arm-cortex_a9-linux-gnueabi-gcc")
+SET(CMAKE_CXX_COMPILER "arm-cortex_a9-linux-gnueabi-g++")
+SET(CMAKE_SYSTEM_PROCESSOR "arm")
 
 include_directories(./ )
 include_directories(./Algo )
@@ -28,7 +32,7 @@ ENDIF ()
 aux_source_directory(./Common DIR_COMMON_SRCS)
 aux_source_directory(./Net DIR_NET_SRCS)
 
-add_executable(EasyAIoT 
+add_library(EasyAIoT STATIC
 				${DIR_SRCS} 
 				${DIR_ALGO_SRCS} 
 				${DIR_APP_SRCS} 

@@ -51,7 +51,10 @@ void pcmPlay(const char *pathname)
     CloseHandle(wait);
     cstring_del(pFile);
 }
-#elif defined(LINUX)
+#elif defined(__linux) || defined(__unix)
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 void pcmPlay(const char *pathname)
 {
     const char *format = "aplay -r16000 -c1 -f S16_LE %s";
