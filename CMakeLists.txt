@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "-fpermissive -D_DEBUG")
 SET(CMAKE_SYSTEM_NAME Linux)
 SET(CMAKE_C_COMPILER "arm-cortex_a9-linux-gnueabi-gcc")
 SET(CMAKE_CXX_COMPILER "arm-cortex_a9-linux-gnueabi-g++")
-SET(CMAKE_SYSTEM_PROCESSOR "arm")
+#SET(CMAKE_SYSTEM_PROCESSOR "arm")
 
 include_directories(./ )
 include_directories(./Algo )

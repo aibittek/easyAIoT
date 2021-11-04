@@ -14,16 +14,16 @@ void vGetAuth(const char *pszAPPKey, const char *pszAPPSecret, const char *pszBa
     char szAuthOri[4096];
     snprintf(szSignatureOrigin, 1024, "host: %s\ndate: %s\n%s",
             pszBaseUrl, pszGMTDate, pszReuqestLine);
-    LOG(ETRACE, "%s", szSignatureOrigin);
+//     LOG(EDEBUG, "%s", szSignatureOrigin);
     hmac_sha256(szSignatureOrigin, strlen(szSignatureOrigin), pszAPPSecret, strlen(pszAPPSecret), szSignatureOriginSha);
-    // LOG(ETRACE, "%s\n", szSignatureOriginSha);
+//     LOG(EDEBUG, "%s\n", szSignatureOriginSha);
     iBase64Encode(szSignatureOriginSha, szSignatureOriginBase64, 32);
-    LOG(ETRACE, "%s", szSignatureOriginBase64);
+//     LOG(EDEBUG, "%s", szSignatureOriginBase64);
     snprintf(szAuthOri, 4096, "api_key=\"%s\", algorithm=\"hmac-sha256\", headers=\"host date request-line\", signature=\"%s\"",
             pszAPPKey, szSignatureOriginBase64);
-    LOG(ETRACE, "%s", szAuthOri);
+//     LOG(EDEBUG, "%s", szAuthOri);
     iBase64Encode(szAuthOri, pAuthData, strlen(szAuthOri));
-    LOG(ETRACE, "%s", pAuthData);
+//     LOG(EDEBUG, "%s", pAuthData);
 }
 
 void vGetAuth2(const char *pszAPPKey, const char *pszAPPSecret, const char *pszHost, 

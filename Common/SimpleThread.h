@@ -11,7 +11,6 @@
 	#include <getopt.h>  
 	#include <sys/types.h>  
 	#include <pthread.h>
-#define usleep Sleep
 #endif
 
 typedef struct ThreadFun ThreadFun;

@@ -30,6 +30,7 @@ typedef int sock_t;
 #define INVALID_SOCKET	(-1)
 #define closesocket(x) close(x)
 #define GET_ERROR() errno
+#define Sleep usleep
 #else
 #error "not support platform."
 #endif

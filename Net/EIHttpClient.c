@@ -340,7 +340,7 @@ bool bHttpConnect(SEIHttpInfo_t *pstHttpInfo, fnSockCallback cb)
             pstRequest->pstPath->sBuffer, pstRequest->pstHost->sBuffer, pstRequest->pstBody->lSize);
         bBody = true;
     }
-    LOG(ETRACE, "header:#%s#", pstHeader->sBuffer);
+    // LOG(EDEBUG, "header:#%s#", pstHeader->sBuffer);
     pstSockClient->iSend(pstSockClient, pstHeader->sBuffer, strlen(pstHeader->sBuffer));
 
     // 发送额外头信息

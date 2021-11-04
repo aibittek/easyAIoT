@@ -111,9 +111,17 @@ int iSockSend(struct SSockClient *pstClient, void *pvData, int iLen)
 #ifdef _WIN32
             errno = WSAGetLastError();
 #endif
-            LOG(EERROR, "iSize:%d, errcode:%d, errdetail:%s",
+            if (errno == EAGAIN)
+            {
+                // Sleep(10*1000);
+                continue;
+            }
+            else
+            {
+                LOG(EERROR, "iSize:%d, errcode:%d, errdetail:%s",
                 iSize, errno, strerror(errno));
-            return iSize;
+                break;
+            }
         }
         iCurSize += iSize;
         iLeftSize -= iSize;

@@ -32,7 +32,7 @@ bool szDateformat(const char *fmt, char *pDate, int iLen)
     if (0 == strcmp(fmt, "GMT") ||
         0 == strcmp(fmt, "gmt")) {
         // 以上获取了北京的NTP时间，北京位于东8区，比GMT(格林尼治)时间快8小时
-        dwTime -= 8 * 60 * 60;
+        // dwTime -= 8 * 60 * 60;
     }
 
     // 把时间转化为字符串格式

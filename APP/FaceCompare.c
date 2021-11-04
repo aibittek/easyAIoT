@@ -109,7 +109,7 @@ double fFaceCompare(const char *pszAPPID,
 {
     double fScore = 0.0f;
     char szDate[64];
-    char szAuthData[512];
+    char szAuthData[512] = {0};
     char szFullUrl[1024];
     char *szBaseUrl = "http://api.xf-yun.com/v1/private/s67c9c78c?host=%s&date=%s&authorization=%s";
 
